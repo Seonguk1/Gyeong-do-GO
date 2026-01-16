@@ -1,0 +1,41 @@
+### 방 만들기 요청 (성공 케이스)
+POST http://localhost:8080/api/rooms
+Content-Type: application/json
+
+{
+  "title": "재미있는 숨바꼭질 방",
+  "maxPlayers": 15,
+  "timeLimit": 20,
+  "mode": "CLASSIC",
+  "details": {
+    "seekerCount": 2
+  }
+}
+
+### 방 만들기 요청 (실패 케이스 - 제목 없음)
+POST http://localhost:8080/api/rooms
+Content-Type: application/json
+
+{
+  "title": "",
+  "maxPlayers": 15,
+  "timeLimit": 20,
+  "mode": "CLASSIC",
+  "details": {
+    "seekerCount": 2
+  }
+}
+
+### 방 만들기 요청 (논리적 에러 - CLASSIC인데 seekerCount 없음)
+POST http://localhost:8080/api/rooms
+Content-Type: application/json
+
+{
+  "title": "에러 테스트 방",
+  "maxPlayers": 10,
+  "timeLimit": 10,
+  "mode": "CLASSIC",
+  "details": {
+    "seekerCount": null
+  }
+}
