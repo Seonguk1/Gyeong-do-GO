@@ -31,17 +31,17 @@ public class RoomService {
         Room room = Room.builder()
                 .roomCode(roomCode)
                 .title(request.getTitle())
-                .maxPlayers(request.getMaxPlayers())
+                .capacity(request.getCapacity())
                 .mode(request.getMode())
                 .seekerCount(request.getDetails() != null ? request.getDetails().getSeekerCount() : null)
-                .hostId("user_8812") // 지금은 임시, 나중엔 인증 정보에서 가져옴
+                .hostNickname(request.getHostNickname())
                 .build();
 
         Room savedRoom = roomRepository.save(room);
 
         return RoomCreateResponse.builder()
                 .roomCode(savedRoom.getRoomCode())
-                .hostId(savedRoom.getHostId())
+                .hostNickname(savedRoom.getHostNickname())
                 .createdAt(savedRoom.getCreatedAt())
                 .build();
     }

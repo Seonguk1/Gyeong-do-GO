@@ -11,22 +11,29 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RoomCreateRequest {
+    @NotBlank(message = "{NotBlank}")
+    @Size(min = 2, message = "{Size.min}")
+    @Size(max = 20, message = "{Size.max}")
+    private String hostNickname;
 
-    @NotBlank(message = "방 제목은 필수입니다.")
+    @NotBlank(message = "{NotBlank}")
+    @Size(min = 2, message = "{Size.min}")
+    @Size(max = 20, message = "{Size.max}")
     private String title;
 
-    @Min(value = 2, message = "최소 인원은 2명입니다.")
-    @Max(value = 20, message = "최대 인원은 20명입니다.")
-    private int maxPlayers;
+    @Min(value = 10, message = "{Min}")
+    @Max(value = 50, message = "{Max}")
+    private int capacity;
 
-    @Positive(message = "제한 시간은 양수여야 합니다.")
+    @Positive(message = "{Positive}")
+    @Max(value = 60, message = "{Max}")
     private int timeLimit;
 
-    @NotNull(message = "게임 모드는 필수입니다.")
+    @NotNull(message = "{NotNull}")
     private GameMode mode;
 
     @Valid // @Valid를 붙여야 내부의 검증 조건도 같이 검사
-    @NotNull(message = "세부 설정은 필수입니다.")
+    @NotNull(message = "{NotNull}")
     private GameDetails details;
 
     @Getter

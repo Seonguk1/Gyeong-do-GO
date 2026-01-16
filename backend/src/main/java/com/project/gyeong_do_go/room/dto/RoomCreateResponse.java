@@ -9,6 +9,6 @@ import java.time.LocalDateTime;
 @Builder
 public class RoomCreateResponse {
     private final String roomCode;
-    private final String hostId;
+    private final String hostNickname;
     private final LocalDateTime createdAt;
 }
