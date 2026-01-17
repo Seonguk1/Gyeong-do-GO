@@ -1,29 +1,44 @@
+// File: src/main/java/com/project/gyeong_do_go/room/dto/RoomController.java
 package com.project.gyeong_do_go.room.controller;
 
-import com.project.gyeong_do_go.common.exception.ApiResponse;
-import com.project.gyeong_do_go.room.dto.RoomCreateRequest;
-import com.project.gyeong_do_go.room.dto.RoomCreateResponse;
+import com.project.gyeong_do_go.global.response.ApiResponse;
 import com.project.gyeong_do_go.room.service.RoomService;
+import com.project.gyeong_do_go.room.dto.request.CreateRoomRequest;
+import com.project.gyeong_do_go.room.dto.request.JoinRoomRequest;
+import com.project.gyeong_do_go.room.dto.response.CreateRoomResponse;
+import com.project.gyeong_do_go.room.dto.response.JoinRoomResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// @Controller: HTML 페이지 반환, @RestController: 데이터(JSON)를 주고받음
-@RestController // 이 클래스가 REST API를 처리하는 컨트롤러임을 선언
-@RequestMapping("/api/rooms") // 이 컨트롤러의 모든 API 주소는 /api/rooms로 시작함
-@RequiredArgsConstructor // 생성자 주입을 자동으로 생성 (Service 사용을 위함)
+@Tag(name = "Room", description = "방 생성/참가 API")
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/rooms")
 public class RoomController {
 
-    private final RoomService roomService; // 비즈니스 로직을 처리할 서비스
+    private final RoomService roomService;
 
-    @PostMapping // 클라이언트가 POST 방식으로 요청을 보낼 때 실행됨
-    public ResponseEntity<ApiResponse<RoomCreateResponse>> createRoom(@Valid @RequestBody RoomCreateRequest request) {
-        request.validate();
-        RoomCreateResponse response = roomService.createRoom(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, response));
+    @Operation(summary = "방 생성", description = "호스트가 방을 생성하고 초대코드를 발급합니다.")
+    @PostMapping
+    public ResponseEntity<ApiResponse<CreateRoomResponse>> createRoom(@Valid @RequestBody CreateRoomRequest req) {
+        RoomService.CreateRoomResult result =
+                roomService.createRoom(req.getHostUserId(), req.getTitle(), req.getCapacity());
+
+        return ResponseEntity.ok(ApiResponse.success(new CreateRoomResponse(result.roomId(), result.code())));
+    }
+
+    @Operation(summary = "방 참가", description = "초대코드로 방에 참가합니다.")
+    @PostMapping("/join")
+    public ResponseEntity<ApiResponse<JoinRoomResponse>> join(@Valid @RequestBody JoinRoomRequest req) {
+        RoomService.JoinRoomResult result =
+                roomService.joinRoom(req.getUserId(), req.getCode());
+
+        return ResponseEntity.ok(ApiResponse.success(new JoinRoomResponse(result.roomId(), result.memberId())));
     }
 }
