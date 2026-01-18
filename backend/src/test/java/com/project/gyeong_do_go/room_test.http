@@ -3,8 +3,9 @@ POST http://localhost:8080/api/rooms
 Content-Type: application/json
 
 {
-  "title": "재미있는 숨바꼭질 방",
-  "maxPlayers": 15,
+  "hostNickname": "admin1234",
+  "title": "재미있는 숨바꼭질 방2",
+  "capacity": 15,
   "timeLimit": 20,
   "mode": "CLASSIC",
   "details": {
@@ -17,8 +18,9 @@ POST http://localhost:8080/api/rooms
 Content-Type: application/json
 
 {
+  "hostNickname": "admin1234",
   "title": "",
-  "maxPlayers": 15,
+  "capacity": 15,
   "timeLimit": 20,
   "mode": "CLASSIC",
   "details": {
@@ -31,8 +33,9 @@ POST http://localhost:8080/api/rooms
 Content-Type: application/json
 
 {
+  "hostNickname": "admin1234",
   "title": "에러 테스트 방",
-  "maxPlayers": 10,
+  "capacity": 10,
   "timeLimit": 10,
   "mode": "CLASSIC",
   "details": {

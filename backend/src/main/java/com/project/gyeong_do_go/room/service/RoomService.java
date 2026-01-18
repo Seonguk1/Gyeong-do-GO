@@ -1,69 +1,86 @@
+// File: src/main/java/com/project/gyeong_do_go/room/service/RoomService.java
 package com.project.gyeong_do_go.room.service;
 
-import com.project.gyeong_do_go.common.exception.BusinessException;
-import com.project.gyeong_do_go.common.exception.ErrorCode;
-import com.project.gyeong_do_go.room.dto.RoomCreateRequest;
-import com.project.gyeong_do_go.room.dto.RoomCreateResponse;
 import com.project.gyeong_do_go.room.entity.Room;
+import com.project.gyeong_do_go.room.entity.RoomMember;
+import com.project.gyeong_do_go.room.domain.RoomStatus;
+import com.project.gyeong_do_go.room.exception.AlreadyJoinedException;
+import com.project.gyeong_do_go.room.exception.RoomFullException;
+import com.project.gyeong_do_go.room.exception.RoomNotFoundException;
+import com.project.gyeong_do_go.room.exception.RoomNotJoinableException;
+import com.project.gyeong_do_go.room.repository.RoomMemberRepository;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
-@Transactional // 데이터 무결성
 public class RoomService {
+
     private final RoomRepository roomRepository;
-    // 가독성을 위해 숫자 0, 1과 알파벳 O, I는 제외
-    private static final String CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    private static final int CODE_LENGTH = 6;
-    private final SecureRandom random = new SecureRandom(); // Math.random()보다 안전
+    private final RoomMemberRepository roomMemberRepository;
 
-    public RoomCreateResponse createRoom(RoomCreateRequest request) {
-        String roomCode = generateUniqueRoomCode();
+    private final SecureRandom random = new SecureRandom();
 
-        Room room = Room.builder()
-                .roomCode(roomCode)
-                .title(request.getTitle())
-                .maxPlayers(request.getMaxPlayers())
-                .mode(request.getMode())
-                .seekerCount(request.getDetails() != null ? request.getDetails().getSeekerCount() : null)
-                .hostId("user_8812") // 지금은 임시, 나중엔 인증 정보에서 가져옴
-                .build();
+    @Transactional
+    public CreateRoomResult createRoom(Long hostUserId, String title, Integer capacity) {
+        if (hostUserId == null) throw new IllegalArgumentException("hostUserId is null");
+        int cap = (capacity == null) ? 4 : capacity;
+        if (cap < 2) throw new IllegalArgumentException("capacity less than MIN");
 
-        Room savedRoom = roomRepository.save(room);
+        String code = generateUniqueCode(6);
 
-        return RoomCreateResponse.builder()
-                .roomCode(savedRoom.getRoomCode())
-                .hostId(savedRoom.getHostId())
-                .createdAt(savedRoom.getCreatedAt())
-                .build();
+        Room room = Room.create(code, title, hostUserId, cap);
+
+        // Room을 먼저 DB에 반영해서 id를 확정
+        Room savedRoom = roomRepository.saveAndFlush(room);
+
+        roomMemberRepository.save(RoomMember.host(savedRoom.getId(), hostUserId));
+
+        return new CreateRoomResult(savedRoom.getId(), savedRoom.getCode());
     }
 
-    private String generateUniqueRoomCode() {
-        String code;
-        int retryCount = 0;
+    @Transactional
+    public JoinRoomResult joinRoom(Long userId, String code) {
+        if (userId == null) throw new IllegalArgumentException("userId is null");
+        if (code == null || code.isBlank()) throw new IllegalArgumentException("code is null");
 
-        while (true) {
-            StringBuilder sb = new StringBuilder(CODE_LENGTH);
-            for (int i = 0; i < CODE_LENGTH; i++) {
-                sb.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
-            }
-            code = sb.toString();
+        Room room = roomRepository.findByCode(code.trim().toUpperCase())
+                .orElseThrow(RoomNotFoundException::new);
 
-            if (!roomRepository.existsByRoomCode(code)) { // 중복 체크
-                return code;
-            }
+        if (room.getStatus() != RoomStatus.WAITING) throw new RoomNotJoinableException();
+        if (roomMemberRepository.existsByRoomIdAndUserId(room.getId(), userId)) throw new AlreadyJoinedException();
 
-            if (++retryCount > 100) {
-                throw new BusinessException(ErrorCode.SERVER_ERROR);
-            }
+        long count = roomMemberRepository.countByRoomId(room.getId());
+        if (count >= room.getCapacity()) throw new RoomFullException();
+
+        try {
+            RoomMember saved = roomMemberRepository.save(RoomMember.member(room.getId(), userId));
+            return new JoinRoomResult(room.getId(), saved.getId());
+        } catch (DataIntegrityViolationException e) {
+            throw new AlreadyJoinedException();
         }
     }
+
+    private String generateUniqueCode(int length) {
+        for (int i = 0; i < 20; i++) {
+            String code = randomCode(length);
+            if (!roomRepository.existsByCode(code)) return code;
+        }
+        throw new IllegalStateException("failed to generate unique code");
+    }
+
+    private String randomCode(int length) {
+        final char[] chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) sb.append(chars[random.nextInt(chars.length)]);
+        return sb.toString();
+    }
+
+    public record CreateRoomResult(Long roomId, String code) {}
+    public record JoinRoomResult(Long roomId, Long memberId) {}
 }
