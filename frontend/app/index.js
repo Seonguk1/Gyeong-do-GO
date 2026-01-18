@@ -3,6 +3,7 @@ import { Button, StyleSheet, View } from "react-native";
 import CustomModal from "../src/components/CustomModal";
 import InputArea from "../src/components/InputArea";
 
+<<<<<<< HEAD
 const BASE_URL = 'http://localhost:8080';
 
 export const postCreateRoom = async (roomInfo) => {
@@ -37,6 +38,12 @@ export default function Index() {
   const [visible, setVisible] = useState(false);
   const [joinVisible,setJoinVisible] = useState(false);
   cosnt [roomInfo, setRoomInfo] = useState(null);
+=======
+
+export default function Index() {
+  const [visible, setVisible] = useState(false);
+  const [joinVisible,setJoinVisible] = useState(false);
+>>>>>>> 1c43201ab9a2ae5f375ffc07ca587be4b26f1492
   return(
     <View
       style={{
@@ -56,6 +63,7 @@ export default function Index() {
         <InputArea title="최대 인원" text="최대 인원"/>
         <InputArea title="시간(분)" text="시간(분)"/>
         <InputArea title="경찰 수" text="경찰 수"/>
+<<<<<<< HEAD
         <Button title="방 만들기"
           onPress={()=>{
             setRoomInfo({
@@ -68,6 +76,9 @@ export default function Index() {
             router
           }}
         />
+=======
+        <Button title="방 만들기"/>
+>>>>>>> 1c43201ab9a2ae5f375ffc07ca587be4b26f1492
       </CustomModal>
 
       <Button
@@ -86,6 +97,115 @@ export default function Index() {
   );
 }
 
+<<<<<<< HEAD
+=======
+// export default function Index() {
+//   const router = useRouter();
+//   const [setVisible, setSetVisible] = useState(false);
+//   const [joinVisible, setJoinVisible] = useState(false);
+
+//   return (
+//     <View
+//       style={{
+//         flex: 1,
+//         justifyContent: "center",
+//         alignItems: "center",
+//       }}
+//     >
+
+
+//       <Modal
+//           transparent={true}
+//           visible={setVisible}
+//           onRequestClose={() => {
+//             Alert.alert('Modal has been closed.');
+//             setSetVisible(!setVisible);
+//           }}>
+//           <View style={styles.centeredView}>
+//             <View style={styles.setView}>
+//               <Text style={styles.setText}>Hello World!</Text>
+//               <Pressable
+//                 style={[styles.button, styles.buttonClose]}
+//                 onPress={() => setSetVisible(!setVisible)}>
+//                 <Text style={styles.textStyle}>Hide Modal</Text>
+//               </Pressable>
+//             </View>
+//           </View>
+//       </Modal>
+
+  
+
+//       <View style={styles.container}>
+//       <Button 
+//         title="방 생성" 
+//         onPress={() => setSetVisible(true)} 
+//       />
+      
+//       </View>
+      
+
+
+//       <Modal
+//           transparent={true}
+//           visible={joinVisible}
+//           onRequestClose={() => {
+//             Alert.alert('Modal has been closed.');
+//             setJoinVisible(!joinVisible);
+//           }}>
+//           <View style={styles.centeredView}>
+//             <View style={styles.joinView}>
+              
+              
+              
+        
+//               <Pressable
+//                 style={[styles.button, styles.buttonClose]}
+//                 onPress={() => setJoinVisible(!joinVisible)}>
+//                 <Text style={styles.textStyle}>Hide Modal</Text>
+//               </Pressable>
+              
+//             </View>
+//           </View>
+//       </Modal>
+//       <TouchableOpacity
+//         style={{
+//           justifyContent: "center",
+//           alignItems: "center",
+//           width: "50%",
+//           height: "10%",
+//           backgroundColor: 'powderblue'
+//         }}
+//         onPress={()=>{setJoinVisible(true)}}
+//       >
+//         <Text>방 참가</Text>
+//         </TouchableOpacity>
+
+        
+//         <TouchableOpacity 
+//           style={{
+//             justifyContent: "center",
+//             alignItems: "center",
+//             width: "50%",
+//             height: "10%",
+//             backgroundColor: 'powderblue'
+//           }}
+//           onPress={() => setJoinVisible(true)}>
+//         <Text>방 참가</Text>
+//         </TouchableOpacity>
+//         <JoinIn
+//         visible={joinVisible} 
+//         onClose={() => setIsJoinVisible(false)}
+//         />
+
+
+//       <View>
+
+//       </View>
+
+//     </View>
+//   );
+// }
+>>>>>>> 1c43201ab9a2ae5f375ffc07ca587be4b26f1492
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
