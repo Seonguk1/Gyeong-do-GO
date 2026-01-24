@@ -28,30 +28,30 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code", nullable = false, length = 8)
+    @Column(name = "code", nullable = true, length = 8)
     private String code;
 
     @Column(name = "title", length = 100)
     private String title;
 
-    @Column(name = "host_user_id", nullable = false)
+    @Column(name = "host_user_id", nullable = true)
     private Long hostUserId;
 
-    @Column(name = "capacity", nullable = false)
+    @Column(name = "capacity", nullable = true)
     private Integer capacity;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = true, length = 20)
     private RoomStatus status;
 
     @Version
-    @Column(name = "version", nullable = false)
+    @Column(name = "version", nullable = true)
     private Long version;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = true, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = true)
     private LocalDateTime updatedAt;
 
     public static Room create(String code, String title, Long hostUserId, Integer capacity) {

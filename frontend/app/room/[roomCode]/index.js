@@ -18,7 +18,6 @@ const Item = ({ title }) => ( // 개별 아이템 디자인
 
 export default function RoomDetailScreen() {
   const data = useLocalSearchParams(); // URL에서 roomCode(id)를 가져옴
-  console.log(data)
   return (
     <View style={{flex:1,
                   justifyContent: 'center',
