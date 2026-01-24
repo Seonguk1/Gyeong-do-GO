@@ -5,7 +5,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class JoinRoomResponse {
-    private final String roomId;
+public class PlayerDto {
     private final String playerId;
+    private final String nickname;
+    private final boolean ready;
 }
