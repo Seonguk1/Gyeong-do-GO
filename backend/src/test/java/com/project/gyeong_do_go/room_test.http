@@ -3,42 +3,19 @@ POST http://localhost:8080/api/rooms
 Content-Type: application/json
 
 {
-  "hostNickname": "admin1234",
-  "title": "재미있는 숨바꼭질 방2",
-  "capacity": 15,
-  "timeLimit": 20,
-  "mode": "CLASSIC",
-  "details": {
-    "seekerCount": 2
-  }
+  "nickname": "su"
 }
 
-### 방 만들기 요청 (실패 케이스 - 제목 없음)
-POST http://localhost:8080/api/rooms
+###
+POST http://localhost:8080/api/rooms/join
 Content-Type: application/json
 
 {
-  "hostNickname": "admin1234",
-  "title": "",
-  "capacity": 15,
-  "timeLimit": 20,
-  "mode": "CLASSIC",
-  "details": {
-    "seekerCount": 2
-  }
+  "joinCode" : "406478",
+  "nickname": "temp1"
 }
 
-### 방 만들기 요청 (논리적 에러 - CLASSIC인데 seekerCount 없음)
-POST http://localhost:8080/api/rooms
+###
+GET http://localhost:8080/api/rooms/3a35609d-2b76-414d-92b8-b19a824c9c41
 Content-Type: application/json
 
-{
-  "hostNickname": "admin1234",
-  "title": "에러 테스트 방",
-  "capacity": 10,
-  "timeLimit": 10,
-  "mode": "CLASSIC",
-  "details": {
-    "seekerCount": null
-  }
-}
