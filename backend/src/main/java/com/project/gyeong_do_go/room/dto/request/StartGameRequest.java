@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateRoomRequest {
-    private String nickname;
+public class StartGameRequest {
+    private String playerId;
 }
