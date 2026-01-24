@@ -1,6 +1,8 @@
 import { Text, TextInput } from "react-native";
 
-const InputArea = ({title, text})=>{
+
+
+const InputArea = ({title, onChangeText, value, keyboardType = 'default' })=>{
   return(
     <>
       <Text>{title}</Text>
@@ -12,7 +14,10 @@ const InputArea = ({title, text})=>{
             borderColor: 'gray',
             borderWidth: 1
             }}
-            placeholder={`${text}`}
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={`${title}`}
+            keyboardType={keyboardType}
       />
     </>
   )
