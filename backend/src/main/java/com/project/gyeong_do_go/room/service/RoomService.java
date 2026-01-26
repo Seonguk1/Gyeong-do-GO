@@ -6,6 +6,7 @@ import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.room.dto.response.RoomStateResponse;
 import com.project.gyeong_do_go.room.entity.Player;
 import com.project.gyeong_do_go.room.entity.Room;
+import com.project.gyeong_do_go.room.entity.RoomSettings;
 import com.project.gyeong_do_go.room.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +27,12 @@ public class RoomService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
-    public RoomStateResponse createRoom(String nickname) {
-        Room room = new Room("123456"); // TODO: 랜덤 생성으로 교체
+    public RoomStateResponse createRoom(String nickname, RoomSettings roomSettings) {
+        Room room = new Room("123456", roomSettings); // TODO: 랜덤 생성으로 교체
         roomRepository.save(room);
 
-        addPlayer(room, nickname);
+        Player host = playerRepository.save(new Player(nickname, room));
+        room.setHost(host);
 
         RoomStateResponse state = buildRoomState(room);
         broadcastRoomState(state);
@@ -42,16 +44,11 @@ public class RoomService {
         Room room = roomRepository.findByCode(code)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND));
 
-        addPlayer(room, nickname);
+        Player player = playerRepository.save(new Player(nickname, room));
 
         RoomStateResponse state = buildRoomState(room);
         broadcastRoomState(state);
         return state;
-    }
-
-    private void addPlayer(Room room, String nickname) {
-        Player player = new Player(nickname, room);
-        playerRepository.save(player);
     }
 
     private RoomStateResponse buildRoomState(Room room) {

@@ -4,6 +4,7 @@ import com.project.gyeong_do_go.global.dto.ApiResponse;
 import com.project.gyeong_do_go.room.dto.request.CreateRoomRequest;
 import com.project.gyeong_do_go.room.dto.request.JoinRoomRequest;
 import com.project.gyeong_do_go.room.dto.response.RoomStateResponse;
+import com.project.gyeong_do_go.room.entity.RoomSettings;
 import com.project.gyeong_do_go.room.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,8 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<RoomStateResponse>> create(@Valid @RequestBody CreateRoomRequest request) {
-        RoomStateResponse response = roomService.createRoom(request.nickname());
+        RoomSettings roomSettings = request.roomSettings().toEntity();
+        RoomStateResponse response = roomService.createRoom(request.nickname(), roomSettings);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
     }
 
