@@ -23,9 +23,10 @@ public class Room {
     private String code;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "host_id")
+    @JoinColumn(name="host_id", nullable = true)
     private Player host;
 
+    @Enumerated(EnumType.STRING)
     private RoomStatus status;
 
     @Embedded
@@ -56,6 +57,10 @@ public class Room {
         this.host = host;
         this.status = RoomStatus.LOBBY;
         this.settings = settings;
+    }
+
+    public void addPlayer(Player player){
+        players.add(player);
     }
 
     public void updateSettings(RoomSettings newSettings) {

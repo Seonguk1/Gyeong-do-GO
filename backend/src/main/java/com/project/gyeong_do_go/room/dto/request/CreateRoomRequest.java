@@ -12,21 +12,24 @@ public record CreateRoomRequest (
         String nickname,
 
         @Valid
-        @NotNull
+        @NotNull(message = "NULL")
         RoomSettingsRequest roomSettings
 ) {
     public record RoomSettingsRequest(
-            @NotNull
+            @NotNull(message = "NULL")
             RoleAssignMode roleAssignMode,
 
-            @Min(10)
-            int roleRevealSeconds,
+            @NotNull(message = "NULL")
+            @Min(value = 10, message = "TOO_SHORT")
+            Integer roleRevealSeconds,
 
-            @Min(10)
-            int thiefEscapeSeconds,
+            @NotNull(message = "NULL")
+            @Min(value = 10, message = "TOO_SHORT")
+            Integer thiefEscapeSeconds,
 
-            @Min(10)
-            int policeChaseSeconds
+            @NotNull(message = "NULL")
+            @Min(value = 10, message = "TOO_SHORT")
+            Integer policeChaseSeconds
     ){
         public RoomSettings toEntity() {
             return new RoomSettings(roleAssignMode, roleRevealSeconds, thiefEscapeSeconds, policeChaseSeconds);

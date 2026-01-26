@@ -28,8 +28,7 @@ public class RoomService {
 
     @Transactional
     public RoomStateResponse createRoom(String nickname, RoomSettings roomSettings) {
-        Room room = new Room("123456", roomSettings); // TODO: 랜덤 생성으로 교체
-        roomRepository.save(room);
+        Room room = roomRepository.save(new Room("123456", roomSettings));
 
         Player host = playerRepository.save(new Player(nickname, room));
         room.setHost(host);
@@ -57,9 +56,9 @@ public class RoomService {
         List<RoomStateResponse.PlayerInfo> infos = new ArrayList<>();
         for (Player p : players) {
             infos.add(new RoomStateResponse.PlayerInfo(p.getNickname(), p.getTeam()));
+            room.addPlayer(p);
         }
-
-        return new RoomStateResponse(room.getCode(), infos.size(), infos);
+        return new RoomStateResponse(room.getCode(), room.getSettings(), infos.size(), infos);
     }
 
     private void broadcastRoomState(RoomStateResponse roomStateResponse){

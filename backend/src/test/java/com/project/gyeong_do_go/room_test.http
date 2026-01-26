@@ -3,7 +3,27 @@ POST http://localhost:8080/api/rooms
 Content-Type: application/json
 
 {
-  "nickname": "su"
+  "nickname": "su",
+  "roomSettings": {
+    "roleAssignMode": "RANDOM",
+    "roleRevealSeconds": 30,
+    "thiefEscapeSeconds": 60,
+    "policeChaseSeconds": 120
+  }
+}
+
+### [error] create_room
+POST http://localhost:8080/api/rooms
+Content-Type: application/json
+
+{
+  "nickname": "su",
+  "roomSettings": {
+    "roleAssignMode": "RANDOMa",
+    "roleRevealSeconds": 1,
+    "thiefEscapeSeconds": 1,
+    "policeChaseSeconds": 1
+  }
 }
 
 ### [success] join_room
