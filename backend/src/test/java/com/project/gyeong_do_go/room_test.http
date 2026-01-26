@@ -1,0 +1,25 @@
+### [success] create_room
+POST http://localhost:8080/api/rooms
+Content-Type: application/json
+
+{
+  "nickname": "su"
+}
+
+### [success] join_room
+POST http://localhost:8080/api/rooms/join
+Content-Type: application/json
+
+{
+  "code" : "123456",
+  "nickname": "player1"
+}
+
+### [error] join_room
+POST http://localhost:8080/api/rooms/join
+Content-Type: application/json
+
+{
+  "code" : "",
+  "nickname": ""
+}
