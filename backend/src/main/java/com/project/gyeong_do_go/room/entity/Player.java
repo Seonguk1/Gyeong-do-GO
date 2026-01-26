@@ -1,48 +1,29 @@
 package com.project.gyeong_do_go.room.entity;
 
+import com.project.gyeong_do_go.room.domain.Team;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-
-import static lombok.AccessLevel.PROTECTED;
-
 @Entity
-@Table(name = "players")
 @Getter
-@NoArgsConstructor(access = PROTECTED)
+@NoArgsConstructor
 public class Player {
     @Id
-    @Column(name = "player_id", length = 36)
-    private String playerId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "room_id", nullable = false, foreignKey = @ForeignKey(name = "fk_players_room"))
-    private Room room;
-
-    @Column(name = "nickname", length = 20, nullable = false)
     private String nickname;
 
-    @Column(name = "ready", nullable = false)
-    private boolean ready;
+    @Enumerated(EnumType.STRING)
+    private Team team = Team.THIEF;
 
-    @Column(name = "joined_at", nullable = false)
-    private Instant joinedAt;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "room_id", nullable = false)
+    private Room room;
 
-    public Player(String playerId, String nickname) {
-        this.playerId = playerId;
+    public Player(String nickname, Room room){
         this.nickname = nickname;
-        this.ready = false;
-        this.joinedAt = Instant.now();
-    }
-
-    void setRoom(Room room) {
         this.room = room;
-    }
-
-    public void setReady(boolean ready) {
-        this.ready = ready;
     }
 }

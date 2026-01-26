@@ -1,4 +1,4 @@
-### 방 만들기 요청 (성공 케이스)
+### [success] create_room
 POST http://localhost:8080/api/rooms
 Content-Type: application/json
 
@@ -6,16 +6,20 @@ Content-Type: application/json
   "nickname": "su"
 }
 
-###
+### [success] join_room
 POST http://localhost:8080/api/rooms/join
 Content-Type: application/json
 
 {
-  "joinCode" : "406478",
-  "nickname": "temp1"
+  "code" : "123456",
+  "nickname": "player123"
 }
 
-###
-GET http://localhost:8080/api/rooms/3a35609d-2b76-414d-92b8-b19a824c9c41
+### [error] join_room
+POST http://localhost:8080/api/rooms/join
 Content-Type: application/json
 
+{
+  "code" : "",
+  "nickname": ""
+}

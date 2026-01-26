@@ -1,71 +1,34 @@
 package com.project.gyeong_do_go.room.controller;
 
+import com.project.gyeong_do_go.global.dto.ApiResponse;
 import com.project.gyeong_do_go.room.dto.request.CreateRoomRequest;
 import com.project.gyeong_do_go.room.dto.request.JoinRoomRequest;
-import com.project.gyeong_do_go.room.dto.request.StartGameRequest;
-import com.project.gyeong_do_go.room.dto.response.CreateRoomResponse;
-import com.project.gyeong_do_go.room.dto.response.JoinRoomResponse;
-import com.project.gyeong_do_go.room.dto.response.RoomSnapshotDto;
-import com.project.gyeong_do_go.room.dto.response.WsEnvelope;
-import com.project.gyeong_do_go.room.entity.Room;
+import com.project.gyeong_do_go.room.dto.response.RoomStateResponse;
 import com.project.gyeong_do_go.room.service.RoomService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
 public class RoomController {
-
     private final RoomService roomService;
-    private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
-    public CreateRoomResponse create(@RequestBody CreateRoomRequest req) {
-        Room room = roomService.createRoom(req.getNickname());
-
-        CreateRoomResponse res = new CreateRoomResponse(
-                room.getRoomId(),
-                room.getJoinCode(),
-                room.getHostPlayerId(),
-                true
-        );
-
-        broadcastSnapshot(room.getRoomId());
-        return res;
+    public ResponseEntity<ApiResponse<RoomStateResponse>> create(@Valid @RequestBody CreateRoomRequest request) {
+        RoomStateResponse response = roomService.createRoom(request.nickname());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
     }
 
     @PostMapping("/join")
-    public JoinRoomResponse join(@RequestBody JoinRoomRequest req) {
-        RoomService.JoinResult jr = roomService.joinRoom(req.getJoinCode(), req.getNickname());
-        JoinRoomResponse res = new JoinRoomResponse(jr.roomId, jr.playerId);
-
-        broadcastSnapshot(jr.roomId);
-        return res;
-    }
-
-    @GetMapping("/{roomId}")
-    public RoomSnapshotDto get(@PathVariable String roomId) {
-        return roomService.getSnapshot(roomId);
-    }
-
-    @PostMapping("/{roomId}/start")
-    public void start(@PathVariable String roomId, @RequestBody StartGameRequest req) {
-        roomService.startGame(roomId, req.getPlayerId());
-
-        RoomSnapshotDto snapshot = roomService.getSnapshot(roomId);
-        messagingTemplate.convertAndSend(
-                "/topic/rooms/" + roomId,
-                WsEnvelope.of("GAME_STARTED", snapshot)
-        );
-    }
-
-    private void broadcastSnapshot(String roomId) {
-        RoomSnapshotDto snapshot = roomService.getSnapshot(roomId);
-        messagingTemplate.convertAndSend(
-                "/topic/rooms/" + roomId,
-                WsEnvelope.of("ROOM_SNAPSHOT", snapshot)
-        );
+    public ResponseEntity<ApiResponse<RoomStateResponse>> join(@Valid @RequestBody JoinRoomRequest request){
+        RoomStateResponse response =  roomService.joinRoom(request.code(), request.nickname());
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.ok(response));
     }
 }
