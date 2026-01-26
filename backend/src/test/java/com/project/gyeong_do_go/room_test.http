@@ -12,7 +12,7 @@ Content-Type: application/json
 
 {
   "code" : "123456",
-  "nickname": "player1"
+  "nickname": "player123"
 }
 
 ### [error] join_room
