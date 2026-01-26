@@ -16,23 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
-<<<<<<< HEAD
-@RequestMapping("/api/rooms")
-=======
->>>>>>> e3f29b75eb3f4b47fe14923e00dce71587760b06
 public class RoomController {
 
     private final RoomService roomService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
-<<<<<<< HEAD
-    public ResponseEntity<ApiResponse<CreateRoomResponse>> createRoom(@Valid @RequestBody CreateRoomRequest req) {
-        RoomService.CreateRoomResult result =
-                roomService.createRoom(req.getHostUserId(), req.getTitle(), req.getCapacity());
-        
-        return ResponseEntity.ok(ApiResponse.success(new CreateRoomResponse(result.roomId(), result.code())));
-=======
     public CreateRoomResponse create(@RequestBody CreateRoomRequest req) {
         Room room = roomService.createRoom(req.getNickname());
 
@@ -45,7 +34,6 @@ public class RoomController {
 
         broadcastSnapshot(room.getRoomId());
         return res;
->>>>>>> e3f29b75eb3f4b47fe14923e00dce71587760b06
     }
 
     @PostMapping("/join")

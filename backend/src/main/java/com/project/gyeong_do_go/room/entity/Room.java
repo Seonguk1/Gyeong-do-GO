@@ -27,43 +27,6 @@ public class Room {
     @Column(name = "room_id", length = 36)
     private String roomId;
 
-<<<<<<< HEAD
-    @Column(name = "code", nullable = true, length = 8)
-    private String code;
-
-    @Column(name = "title", length = 100)
-    private String title;
-
-    @Column(name = "host_user_id", nullable = true)
-    private Long hostUserId;
-
-    @Column(name = "capacity", nullable = true)
-    private Integer capacity;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = true, length = 20)
-    private RoomStatus status;
-
-    @Version
-    @Column(name = "version", nullable = true)
-    private Long version;
-
-    @Column(name = "created_at", nullable = true, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = true)
-    private LocalDateTime updatedAt;
-
-    public static Room create(String code, String title, Long hostUserId, Integer capacity) {
-        Room room = new Room();
-        room.code = code;
-        room.title = title;
-        room.hostUserId = hostUserId;
-        room.capacity = capacity == null ? 4 : capacity;
-        room.status = RoomStatus.WAITING;
-        room.version = 0L;
-        return room;
-=======
     @Column(name = "join_code", length = 6, nullable = false)
     private String joinCode;
 
@@ -87,7 +50,6 @@ public class Room {
         this.hostPlayerId = hostPlayerId;
         this.status = RoomStatus.LOBBY;
         this.createdAt = Instant.now();
->>>>>>> e3f29b75eb3f4b47fe14923e00dce71587760b06
     }
 
     public void setStatus(RoomStatus status) {

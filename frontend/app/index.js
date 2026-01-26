@@ -43,7 +43,7 @@ export default function Index() {
 
             // setRoomInfo();
             useCreateRoom({
-              "hostUserId": hostId,
+              "nickname": hostId,
               "title": title,
               "capacity": capacity,
               // "code": "ABC12345", // 필수! 8자리 랜덤 문자열 (엔티티 length=8 기준)
