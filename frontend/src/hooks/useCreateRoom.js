@@ -3,6 +3,7 @@ import createRoom from "../api/createRoom";
 
 const useCreateRoom = async (data, router) => {
     const responseData = await createRoom(data);
+    console.log(responseData)
     if(responseData.error != null){
         if(responseData.error.code == 'INTERNAL_ERROR'){
             
@@ -19,7 +20,7 @@ const useCreateRoom = async (data, router) => {
     
     else{
         router.push({
-            pathname: `/room/${responseData.data.code}`
+            pathname: `/room/${responseData.joinCode}`
         });
     }
 }
