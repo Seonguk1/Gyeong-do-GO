@@ -9,9 +9,11 @@ export default function Index() {
   const router = useRouter();
   const [visible, setVisible] = useState(false);
   const [joinVisible,setJoinVisible] = useState(false);
-  const [title, setTitle] = useState(null);
-  const [hostId, setHostId] = useState(null);
-  const [capacity, setCapacity] = useState(4);
+  //create
+  const [hostNickName, setHostNickName] = useState(null);
+  const [playTime, setPlayTime] = useState(15); // 기본 60초로 설정
+  const [prepTime, setPrepTime] = useState(3);
+  //join
   const [roomCode, setRoomCode] = useState(null);
   const [joinerId, setJoinerId] = useState(null);
 
@@ -33,21 +35,19 @@ export default function Index() {
         visible={visible}
         setVisible={setVisible}
       >
-        <InputArea title="방장 닉네임" value={hostId} onChangeText={setHostId} />
-        <InputArea title="방 제목" value={title} onChangeText={setTitle}/>
-        <InputArea title="인원 수" value={capacity} onChangeText={setCapacity} keyboardType="numeric"/>
+        <InputArea title="방장 닉네임" value={hostNickName} onChangeText={setHostNickName} />
+        <InputArea title="플레이 시간(분)" value={playTime} onChangeText={setPlayTime} keyboardType="numeric"/>
+        <InputArea title="준비 시간(분)" value={prepTime} onChangeText={setPrepTime} keyboardType="numeric"/>
         <Button title="방 만들기"
           onPress={()=>{
             // 1. post request 요청 -> 성공 시 서버가 방 코드 보내줌
             // 2. 서버한테 받은 정보를 가지고 router.push 진행
-
-            // setRoomInfo();
             useCreateRoom({
-              "nickname": hostId,
-              "title": title,
-              "capacity": capacity,
-              // "code": "ABC12345", // 필수! 8자리 랜덤 문자열 (엔티티 length=8 기준)
-              // "status": "WAITING"
+              "nickname": hostNickName,
+              "roomSettings":{
+                "playTime":playTime,
+                "prepTime":prepTime
+              }
             },router);
           }}
         />
