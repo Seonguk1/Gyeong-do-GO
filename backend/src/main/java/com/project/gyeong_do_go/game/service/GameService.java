@@ -4,10 +4,6 @@ import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResponse;
 import com.project.gyeong_do_go.game.dto.response.UpdateRoomResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
-import com.project.gyeong_do_go.global.error.CustomException;
-import com.project.gyeong_do_go.global.error.ErrorCode;
-import com.project.gyeong_do_go.room.entity.Room;
-import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -25,6 +21,16 @@ public class GameService {
 
         sendToRoom(roomId, GameMessageType.UPDATE_ROOM, roomData);
     }
+
+//    public void handleLocationUpdate(LocationRequest req){
+//        Long roomId = req.getRoomId();
+//        Long playerId = req.getPlayerId();
+//
+//        gameRepository.updatePlayerLocation(roomId, playerId, req.getLat(), req.getLng());
+//
+//        UpdateRoomResponse.PlayerInfo me = gameRepository.getPlayerInfo(roomId, playerId);
+//        if (me == null) return; // 예외 처리
+//    }
 
     private void sendToRoom(Long roomId, GameMessageType type, Object data) {
         GameResponse<Object> response = GameResponse.builder()

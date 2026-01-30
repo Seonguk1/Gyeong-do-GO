@@ -8,7 +8,7 @@ import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.room.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository; // 이거 import 필수!
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
