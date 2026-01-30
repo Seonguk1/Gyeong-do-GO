@@ -47,7 +47,7 @@ Content-Type: application/json
   "role": "POLICE"
 }
 
-### 팀 변경
+### 준비 변경
 PATCH {{baseUrl}}/rooms/{{roomId}}/players/ready
 Content-Type: application/json
 

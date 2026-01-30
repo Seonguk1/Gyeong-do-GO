@@ -26,7 +26,7 @@ public class Room extends BaseTimeEntity {
 
     // 맵 설정
     private double centerLat;
-    private double centerLng;
+    private double centerLon;
     private int mapRadius;      // 기본값 300
     private int prisonRadius;   // 기본값 20
 
@@ -41,11 +41,11 @@ public class Room extends BaseTimeEntity {
     private List<Player> players = new ArrayList<>();
 
     @Builder
-    public Room(String roomCode, double centerLat, double centerLng,
+    public Room(String roomCode, double centerLat, double centerLon,
                 int mapRadius, int prisonRadius, int timeLimit, int runawayLimit) {
         this.roomCode = roomCode;
         this.centerLat = centerLat;
-        this.centerLng = centerLng;
+        this.centerLon = centerLon;
         this.mapRadius = mapRadius;
         this.prisonRadius = prisonRadius;
         this.timeLimit = timeLimit;

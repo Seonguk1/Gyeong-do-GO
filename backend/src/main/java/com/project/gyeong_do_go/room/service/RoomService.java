@@ -36,7 +36,7 @@ public class RoomService {
         Room room = Room.builder()
                 .roomCode(roomCode)
                 .centerLat(request.latitude())
-                .centerLng(request.longitude())
+                .centerLon(request.longitude())
                 .mapRadius(request.mapRadius())
                 .prisonRadius(request.prisonRadius())
                 .timeLimit(request.timeLimit())
