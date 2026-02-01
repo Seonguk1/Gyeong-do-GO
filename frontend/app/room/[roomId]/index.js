@@ -2,7 +2,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { FlatList, Text, View } from 'react-native';
-import { useWaitingRoom } from '../../../src/hooks/useWaitingRoom';
+import  useWaitingRoom  from '../../../src/hooks/useWaitingRoom';
 // SocketProvider 임포트 경로를 확인해주세요!
 import { SocketProvider } from '../../../src/context/SocketContext'; 
 
@@ -21,7 +21,7 @@ function RoomContent({ data }) {
     <View style={{flex:1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2E3748'}}>
       <View style={{flex:20, justifyContent: 'center', alignItems: 'center', marginTop:20, marginBottom:40}}>
         <Text style={{ fontSize: 24 }}>방 참가 코드: {data.roomCode}</Text>
-        <Text style={{ fontSize: 18 }}>방장 : </Text>
+        <Text style={{ fontSize: 18 }}>방장 : {host?.nickname}</Text>
       </View>
 
       <View style={{flex:10, flexDirection: 'row', justifyContent: 'space-between', marginVertical:10, fontSize: 18, gap:5}}>

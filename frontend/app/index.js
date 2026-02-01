@@ -5,6 +5,7 @@ import CustomModal from "../src/components/CustomModal";
 import InputArea from "../src/components/InputArea";
 import useCreateRoom from '../src/hooks/useCreateRoom';
 import { useLocation } from '../src/hooks/useLocation';
+import useJoinRoom from '../src/hooks/useJoinRoom';
 
 export default function Index() {
   const router = useRouter();
@@ -46,12 +47,15 @@ export default function Index() {
             // 1. post request 요청 -> 성공 시 서버가 방 코드 보내줌
             // 2. 서버한테 받은 정보를 가지고 router.push 진행
             const coords = await getCurrentCoords();
+            console.log()
             useCreateRoom({
               "nickname": hostNickName,
               "timeLimit":playTime,
               "runawayLimit":prepTime,
               "latitude":coords.latitude,
-              "longitude":coords.longitude
+              "longitude":coords.longitude,
+              "mapRadius": 300,        // 맵 반경 (m) - 기본값: 300
+              "prisonRadius": 20
             },router);
           }}
         />
@@ -66,7 +70,7 @@ export default function Index() {
         setVisible={setJoinVisible}
       >
         <InputArea title="방 코드" value={roomCode} onChangeText={setRoomCode}/>
-        <InputArea title="닉네임" value={joinerNickName} onChangeText={setJoinerNickName} keyboardType="numeric"/>
+        <InputArea title="닉네임" value={joinerNickName} onChangeText={setJoinerNickName}/>
         <Button title="참가"
           onPress={()=>{
             useJoinRoom({
