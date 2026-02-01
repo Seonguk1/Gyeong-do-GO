@@ -1,6 +1,7 @@
 package com.project.gyeong_do_go.game.dto.request;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 

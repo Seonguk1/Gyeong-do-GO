@@ -5,5 +5,6 @@ public enum GameMessageType {
     ROOM_STATUS_CHANGE,
     UPDATE_LOCATION,
     PLAYER_STATE_CHANGE,
+    PLAYER_CAUGHT,
     GAME_OVER
 }

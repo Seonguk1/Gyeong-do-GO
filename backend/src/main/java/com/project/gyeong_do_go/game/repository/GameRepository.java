@@ -2,6 +2,8 @@ package com.project.gyeong_do_go.game.repository;
 
 import com.project.gyeong_do_go.game.dto.response.UpdateRoomResponse;
 import com.project.gyeong_do_go.room.domain.GameStatus;
+import com.project.gyeong_do_go.room.domain.PlayerStatus;
+import com.project.gyeong_do_go.room.domain.Role;
 import com.project.gyeong_do_go.room.entity.Player;
 import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.room.repository.PlayerRepository;
@@ -58,6 +60,30 @@ public class GameRepository {
         return findRoomById(roomId).getTimeLimit();
     }
 
+    @Transactional(readOnly = true)
+    public int getPrisonLimit(Long roomId) { return findRoomById(roomId).getPrisonRadius(); }
+
+    @Transactional(readOnly = true)
+    public int getMapRadius(Long roomId) { return findRoomById(roomId).getMapRadius(); }
+
+    @Transactional(readOnly = true)
+    public GameStatus getRoomStatus(Long roomId) { return findRoomById(roomId).getRoomStatus(); }
+
+    @Transactional(readOnly = true)
+    public Player getPlayer(Long playerId) {
+        return playerRepository.findById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("플레이어를 찾을 수 없습니다. id=" + playerId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Player> getAliveThieves(Long roomId) {
+        // (성능 최적화를 위해선 JPQL로 "SELECT p FROM Player p WHERE p.room.id = :roomId AND p.role = 'THIEF' AND p.status != 'OUT'" 쿼리를 만드는 게 좋음)
+        return playerRepository.findByRoomId(roomId).stream()
+                .filter(p -> p.getRole() == Role.THIEF)
+                .filter(p -> !PlayerStatus.JAILED.equals(p.getStatus()))
+                .collect(Collectors.toList());
+    }
+
     // ==========================================
     //  변경 로직 (Write) - @Transactional 필수
     // ==========================================
@@ -75,6 +101,20 @@ public class GameRepository {
             case FINISHED -> room.finishGame();
             default -> throw new IllegalArgumentException("유효하지 않은 게임 상태입니다: " + statusName);
         }
+    }
+
+    @Transactional
+    public void updatePlayerLocation(Long roomId, Long playerId, double lat, double lng) {
+        Player player = getPlayer(playerId);
+
+        player.updateLocation(lat, lng);
+    }
+
+    @Transactional
+    public void updatePlayerStatus(Long playerId, PlayerStatus status) {
+        Player player = getPlayer(playerId);
+
+        player.setStatus(status);
     }
 
     @Transactional

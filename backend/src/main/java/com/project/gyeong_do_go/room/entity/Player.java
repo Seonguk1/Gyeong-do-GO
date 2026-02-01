@@ -3,10 +3,7 @@ package com.project.gyeong_do_go.room.entity;
 import com.project.gyeong_do_go.room.domain.PlayerStatus;
 import com.project.gyeong_do_go.room.domain.Role;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
@@ -33,6 +30,9 @@ public class Player extends BaseTimeEntity {
     @Column(nullable = false)
     private Role role; // THIEF, POLICE
 
+    private double latitude;
+    private double longitude;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PlayerStatus status; // ALIVE, JAILED
@@ -50,6 +50,7 @@ public class Player extends BaseTimeEntity {
     }
 
     // === 비즈니스 로직 ===
+    public void setStatus(PlayerStatus status) {this.status = status;}
 
     public void updateRole(Role newRole) {
         this.role = newRole;
@@ -57,6 +58,11 @@ public class Player extends BaseTimeEntity {
 
     public void toggleReady(boolean isReady) {
         this.isReady = isReady;
+    }
+
+    public void updateLocation(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public void updateSocketId(String socketId) {

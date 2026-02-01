@@ -1,0 +1,11 @@
+package com.project.gyeong_do_go.game.dto.response;
+
+import lombok.Builder;
+
+@Builder
+public class CatchResponse {
+    private Long policeId;
+    private String policeNickname;
+    private Long thiefId;
+    private String thiefNickname;
+}
