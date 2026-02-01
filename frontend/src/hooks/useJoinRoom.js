@@ -2,9 +2,10 @@ import { Alert } from "react-native";
 import joinRoom from "../api/joinRoom";
 
 const useJoinRoom = async (data, router) => {
-    const roomCode = data.roomCode;
+    const responseData = await joinRoom(data);
+    const roomId = responseData.roomId;
         router.push({
-            pathname: `/room/${roomCode}`,
+            pathname: `/room/${roomId}`,
             params: { 
                     roomId: responseData.data.roomId,
                     playerId: responseData.data.playerId,
