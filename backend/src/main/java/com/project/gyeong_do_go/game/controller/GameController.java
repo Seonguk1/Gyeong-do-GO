@@ -1,6 +1,7 @@
 package com.project.gyeong_do_go.game.controller;
 
 import com.project.gyeong_do_go.game.domain.GameMessageType;
+import com.project.gyeong_do_go.game.dto.request.BaseGameRequest;
 import com.project.gyeong_do_go.game.dto.request.JoinGameRequest;
 import com.project.gyeong_do_go.game.dto.request.LocationRequest;
 import com.project.gyeong_do_go.game.dto.response.GameResponse;
@@ -24,6 +25,11 @@ public class GameController {
         gameService.broadcastRoomInfo(request.getRoomId());
     }
 
+    @MessageMapping("/game/start")
+    public void startGame(@Payload BaseGameRequest request) {
+        gameService.startGame(request.getRoomId(), request.getPlayerId());
+    }
+
     @MessageMapping("/game/location")
     public void sendLocation(LocationRequest request) {
         LocationResponse locationData = LocationResponse.builder()
@@ -40,6 +46,28 @@ public class GameController {
         template.convertAndSend("/topic/room/" + request.getRoomId(), response);
     }
 
-
+//    @MessageExceptionHandler(MethodArgumentNotValidException.class)
+//    @SendToUser("/queue/errors")
+//    public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {
+//
+//        String errorMessage = ex.getBindingResult().getFieldError().getDefaultMessage();
+//
+//        return ErrorResponse.builder()
+//                .type("ERROR")
+//                .code("INVALID_INPUT")
+//                .message(errorMessage)
+//                .build();
+//    }
+//
+//    // 그 외 런타임 예외 처리
+//    @MessageExceptionHandler(IllegalStateException.class)
+//    @SendToUser("/queue/errors")
+//    public ErrorResponse handleIllegalStateException(IllegalStateException ex) {
+//        return ErrorResponse.builder()
+//                .type("ERROR")
+//                .code("GAME_ERROR")
+//                .message(ex.getMessage())
+//                .build();
+//    }
 
 }

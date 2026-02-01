@@ -24,7 +24,7 @@ public record RoomDetailResponse(
         return new RoomDetailResponse(
                 room.getId(),
                 room.getRoomCode(),
-                room.getGameStatus().name(),
+                room.getRoomStatus().name(),
                 myId,
                 room.getPlayers().stream()
                         .map(p -> new PlayerDetail(

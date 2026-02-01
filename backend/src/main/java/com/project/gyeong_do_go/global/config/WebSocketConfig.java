@@ -2,6 +2,7 @@ package com.project.gyeong_do_go.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -24,12 +25,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app"); // 발행
 
-        registry.enableSimpleBroker("/topic") // 구독
+        registry.enableSimpleBroker("/topic", "/queue") // 구독
                 .setHeartbeatValue(new long[]{10000, 10000})
                 .setTaskScheduler(wsTaskScheduler()); // 이름 충돌 없는 스케줄러 사용
     }
 
     @Bean(name = "wsTaskScheduler")
+    @Primary
     public TaskScheduler wsTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(1);

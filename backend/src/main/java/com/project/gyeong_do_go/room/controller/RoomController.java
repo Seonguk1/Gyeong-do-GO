@@ -31,7 +31,7 @@ public class RoomController {
                 room.getId(),
                 room.getRoomCode(),
                 host.getId(),
-                room.getGameStatus().name()
+                room.getRoomStatus().name()
         ));
     }
 
@@ -42,7 +42,7 @@ public class RoomController {
                 player.getRoom().getId(),
                 player.getRoom().getRoomCode(),
                 player.getId(),
-                player.getRoom().getGameStatus().name()
+                player.getRoom().getRoomStatus().name()
         ));
     }
 
@@ -64,8 +64,8 @@ public class RoomController {
         Room room = roomService.getRoomDetail(roomId);
 
         return ApiResponse.success(new GameStartResponse(
-                room.getGameStatus().name(),
-                room.getStartTime().toString()
+                room.getRoomStatus().name(),
+                room.getStartedAt().toString()
         ));
     }
 
