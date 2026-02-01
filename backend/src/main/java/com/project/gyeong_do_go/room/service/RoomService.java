@@ -36,7 +36,7 @@ public class RoomService {
         Room room = Room.builder()
                 .roomCode(roomCode)
                 .centerLat(request.latitude())
-                .centerLng(request.longitude())
+                .centerLon(request.longitude())
                 .mapRadius(request.mapRadius())
                 .prisonRadius(request.prisonRadius())
                 .timeLimit(request.timeLimit())
@@ -63,7 +63,7 @@ public class RoomService {
         Room room = roomRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
 
-        if (room.getGameStatus() != GameStatus.WAITING) {
+        if (room.getRoomStatus() != GameStatus.WAITING) {
             throw new CustomException(ErrorCode.GAME_ALREADY_STARTED);
         }
 
@@ -91,7 +91,7 @@ public class RoomService {
             throw new CustomException(ErrorCode.NOT_HOST);
         }
 
-        room.startGame();
+        room.startRoleCheck();
     }
 
     @Transactional

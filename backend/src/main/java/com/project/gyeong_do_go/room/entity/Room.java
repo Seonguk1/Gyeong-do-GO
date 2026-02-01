@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class Room extends BaseTimeEntity {
 
     // 맵 설정
     private double centerLat;
-    private double centerLng;
+    private double centerLon;
     private int mapRadius;      // 기본값 300
     private int prisonRadius;   // 기본값 20
 
@@ -34,18 +33,22 @@ public class Room extends BaseTimeEntity {
     private int timeLimit;      // 기본값 600 (10분)
     private int runawayLimit;   // 기본값 180 (3분)
 
-    private LocalDateTime startTime; // 게임 시작 시각 (NULL = WAITING)
+    @Enumerated(EnumType.STRING)
+    private GameStatus roomStatus;
+
+    private LocalDateTime startedAt; // 게임(RoleCheck) 시작 시각
 
     // Player와 1:N 관계 (방이 삭제되면 플레이어도 삭제)
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
     private List<Player> players = new ArrayList<>();
 
     @Builder
-    public Room(String roomCode, double centerLat, double centerLng,
+    public Room(String roomCode, double centerLat, double centerLon,
                 int mapRadius, int prisonRadius, int timeLimit, int runawayLimit) {
         this.roomCode = roomCode;
+        this.roomStatus = GameStatus.WAITING;
         this.centerLat = centerLat;
-        this.centerLng = centerLng;
+        this.centerLon = centerLon;
         this.mapRadius = mapRadius;
         this.prisonRadius = prisonRadius;
         this.timeLimit = timeLimit;
@@ -58,26 +61,24 @@ public class Room extends BaseTimeEntity {
         this.players.add(player);
     }
 
-    // 게임 시작 (방장만 호출)
-    public void startGame() {
-        this.startTime = LocalDateTime.now();
+    // 1. 게임 시작 (역할 확인 단계)
+    public void startRoleCheck() {
+        this.roomStatus = GameStatus.ROLE_CHECK;
+        this.startedAt = LocalDateTime.now();
     }
 
-    // 현재 게임 상태 계산 (DB 컬럼 없이 시간으로 계산)
-    public GameStatus getGameStatus() {
-        if (this.startTime == null) {
-            return GameStatus.WAITING;
-        }
+    // 2. 도주 시작
+    public void startRunaway() {
+        this.roomStatus = GameStatus.RUNAWAY;
+    }
 
-        LocalDateTime now = LocalDateTime.now();
-        long secondsElapsed = ChronoUnit.SECONDS.between(this.startTime, now);
+    // 3. 본게임 시작
+    public void startMainGame() {
+        this.roomStatus = GameStatus.PLAYING;
+    }
 
-        if (secondsElapsed < this.runawayLimit) {
-            return GameStatus.RUNAWAY;
-        } else if (secondsElapsed < (this.runawayLimit + this.timeLimit)) {
-            return GameStatus.PLAYING;
-        } else {
-            return GameStatus.FINISHED;
-        }
+    // 4. 게임 종료
+    public void finishGame() {
+        this.roomStatus = GameStatus.FINISHED;
     }
 }
