@@ -1,11 +1,13 @@
 package com.project.gyeong_do_go.player.entity;
 
+import com.project.gyeong_do_go.global.entity.BaseTimeEntity;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.domain.Role;
-import com.project.gyeong_do_go.global.entity.BaseTimeEntity;
 import com.project.gyeong_do_go.room.entity.Room;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -39,6 +41,20 @@ public class Player extends BaseTimeEntity {
     private double latitude;
     private double longitude;
 
+    // === [MVP 산정용 통계 필드] ===
+
+    private int catchCount = 0;      // (경찰) 도둑 잡은 횟수
+
+    private int rescueCount = 0;     // (도둑) 동료 구해준 횟수
+
+    private double totalDistance = 0.0; // (공통) 총 이동 거리 (미터)
+
+    private LocalDateTime caughtAt;  // (도둑) 잡힌 시간 (생존 시간 계산용)
+
+    private LocalDateTime gameJoinedAt; // (공통) 게임 참가 시간 (또는 방 생성 시점 활용)
+
+    // ============================
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private Room room;
@@ -56,13 +72,13 @@ public class Player extends BaseTimeEntity {
     }
 
     // === 비즈니스 로직 ===
+
     public void updateStatus(PlayerStatus status) {
         this.status = status;
     }
 
-    // 2. 더 좋은 방식 (행위를 나타냄)
     public void arrest() {
-        this.status = PlayerStatus.OUT;
+        this.status = PlayerStatus.JAILED;
     }
 
     public void rescue() {
@@ -74,11 +90,24 @@ public class Player extends BaseTimeEntity {
         this.longitude = longitude;
     }
 
-    public void catchThief() {
-        this.status = PlayerStatus.JAILED;
+    // 경찰이 도둑 잡았을 때
+    public void increaseCatchCount() {
+        this.catchCount++;
     }
 
-    public void release() {
-        this.status = PlayerStatus.ALIVE;
+    // 도둑이 동료 구했을 때
+    public void increaseRescueCount(int count) {
+        this.rescueCount += count;
+    }
+
+    // 이동했을 때 (기존 좌표와 새 좌표 사이 거리 누적)
+    public void addDistance(double distanceInMeters) {
+        this.totalDistance += distanceInMeters;
+    }
+
+    // 잡혔을 때 (생존 시간 계산 종료점)
+    public void markAsCaught() {
+        this.status = PlayerStatus.OUT;
+        this.caughtAt = LocalDateTime.now();
     }
 }

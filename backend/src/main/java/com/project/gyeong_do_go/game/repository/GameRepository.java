@@ -1,12 +1,12 @@
 package com.project.gyeong_do_go.game.repository;
 
 import com.project.gyeong_do_go.game.dto.response.UpdateRoomResponse;
-import com.project.gyeong_do_go.room.domain.GameStatus;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.player.entity.Player;
-import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.player.repository.PlayerRepository;
+import com.project.gyeong_do_go.room.domain.GameStatus;
+import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class GameRepository {
+public class GameRepository{
 
     private final RoomRepository roomRepository;
     private final PlayerRepository playerRepository;
@@ -84,6 +84,10 @@ public class GameRepository {
                 .collect(Collectors.toList());
     }
 
+    public List<Player> findPrisonersByRoomId(Long roomId) {
+        return playerRepository.findPrisonersByRoomId(roomId);
+    }
+
     // ==========================================
     //  변경 로직 (Write) - @Transactional 필수
     // ==========================================
@@ -101,13 +105,6 @@ public class GameRepository {
             case FINISHED -> room.finishGame();
             default -> throw new IllegalArgumentException("유효하지 않은 게임 상태입니다: " + statusName);
         }
-    }
-
-    @Transactional
-    public void updatePlayerLocation(Long roomId, Long playerId, double lat, double lng) {
-        Player player = getPlayer(playerId);
-
-        player.updateLocation(lat, lng);
     }
 
     @Transactional

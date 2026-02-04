@@ -5,6 +5,7 @@ import com.project.gyeong_do_go.game.component.GameReader;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.CatchResponse;
 import com.project.gyeong_do_go.game.dto.response.LocationResponse;
+import com.project.gyeong_do_go.game.dto.response.RescueResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
 import com.project.gyeong_do_go.global.util.GeometryUtil;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
@@ -16,6 +17,9 @@ import com.project.gyeong_do_go.room.entity.Room;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +40,18 @@ public class GameActionService {
         if (room.getRoomStatus() != GameStatus.RUNAWAY && room.getRoomStatus() != GameStatus.PLAYING) {
             return;
         }
+
+        // 거리 계산 (이전 좌표가 있다면)
+        double dist = GeometryUtil.calculateDistance(player.getLatitude(), player.getLongitude(), latitude, longitude);
+
+        // 튀는 값(GPS 에러로 순간이동) 제외하고 누적
+        if (dist >= 100.0) { return; }
+
+        player.addDistance(dist);
+
+        player.updateLocation(latitude, longitude);
+
         // 위치 저장 (Redis 또는 DB/Memory)
-        gameRepository.updatePlayerLocation(roomId, playerId, latitude, longitude);
 
         LocationResponse locationData = LocationResponse.builder()
                 .playerId(playerId)
@@ -63,7 +77,9 @@ public class GameActionService {
             throw new IllegalArgumentException("거리가 너무 멀어 검거할 수 없습니다. 거리: " + (int)distance + "m");
         }
 
-        thief.updateStatus(PlayerStatus.OUT);
+        thief.arrest();
+        police.increaseCatchCount();
+        thief.markAsCaught();
 
         Long roomId = police.getRoom().getId();
 
@@ -92,6 +108,53 @@ public class GameActionService {
         GameStatus status = police.getRoom().getRoomStatus();
         if (status != GameStatus.PLAYING && status != GameStatus.RUNAWAY) { // 게임 진행 중인가?
             throw new IllegalArgumentException("게임 진행 중에만 검거할 수 있습니다.");
+        }
+    }
+
+    @Transactional
+    public void rescuePrisoners(Long rescuerId) {
+        Player rescuer = gameReader.getPlayer(rescuerId);
+        Room room = rescuer.getRoom();
+
+        validateRescueCondition(rescuer, room);
+
+        double distance = GeometryUtil.calculateDistance(
+                rescuer.getLatitude(), rescuer.getLongitude(),
+                room.getCenterLat(), room.getCenterLon()
+        );
+        if (distance > room.getPrisonRadius()) {
+            throw new IllegalStateException("감옥과 너무 멉니다. 더 가까이 가세요!");
+        }
+        List<Player> prisoners = gameRepository.findPrisonersByRoomId(room.getId());
+        if (prisoners.isEmpty()) {
+            throw new IllegalStateException("구출할 동료가 없습니다.");
+        }
+        List<String> rescuedNicknames = new ArrayList<>();
+        for (Player prisoner : prisoners) {
+            prisoner.rescue();
+            rescuedNicknames.add(prisoner.getNickname());
+        }
+
+        rescuer.increaseRescueCount(prisoners.size());
+
+        RescueResponse response = RescueResponse.builder()
+                .rescuerNickname(rescuer.getNickname())
+                .rescuedCount(prisoners.size())
+                .rescuedNicknames(rescuedNicknames)
+                .build();
+
+        gameBroadcaster.sendToRoom(room.getId(), GameMessageType.PLAYER_RESCUED, response);
+    }
+    private void validateRescueCondition(Player rescuer, Room room) {
+        if (rescuer.getRole() != Role.THIEF) {
+            throw new IllegalStateException("도둑만 탈옥을 시도할 수 있습니다.");
+        }
+        if (rescuer.getStatus() == PlayerStatus.OUT) {
+            throw new IllegalStateException("죽은 자는 탈옥을 시도할 수 없습니다.");
+        }
+        // 게임 진행 중인지 확인 (RUNAWAY 때는 감옥 기능 비활성 등 규칙에 따라 추가)
+        if (room.getRoomStatus() != GameStatus.PLAYING) {
+            throw new IllegalStateException("게임 진행 중에만 가능합니다.");
         }
     }
 }

@@ -63,6 +63,13 @@ public class GameController {
         actionService.catchThief(policeId, request.getTargetId());
     }
 
+    @MessageMapping("/rescue")
+    public void rescuePrisoners(SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+        Long playerId = sessionManager.getPlayerId(sessionId);
+        actionService.rescuePrisoners(playerId);
+    }
+
 //    @MessageExceptionHandler(MethodArgumentNotValidException.class)
 //    @SendToUser("/queue/errors")
 //    public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {

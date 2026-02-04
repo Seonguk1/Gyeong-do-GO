@@ -4,6 +4,7 @@ import com.project.gyeong_do_go.game.component.GameBroadcaster;
 import com.project.gyeong_do_go.game.component.GameReader;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResultResponse;
+import com.project.gyeong_do_go.game.dto.response.GameResultResponse.MvpResult;
 import com.project.gyeong_do_go.game.repository.GameRepository;
 import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.player.entity.Player;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -103,10 +105,46 @@ public class GameFlowService {
     }
 
     private void finishGame(Long roomId, Role winnerTeam) {
+        MvpResult mvp = calculateMvp(roomId, winnerTeam);
+
         gameRepository.updateRoomStatus(roomId, "FINISHED");
         GameResultResponse result = GameResultResponse.builder()
                 .winnerTeam(winnerTeam)
+                .mvpPlayer(mvp.getNickname())
+                .mvpReason(mvp.getReason())
                 .build();
         gameBroadcaster.sendToRoom(roomId, GameMessageType.GAME_OVER, result);
+    }
+
+    private MvpResult calculateMvp(Long roomId, Role winnerTeam) {
+        List<Player> players = gameRepository.getPlayers(roomId);
+
+        Player mvp = null;
+        String reason = "";
+
+        if (winnerTeam == Role.POLICE) {
+            // 경찰 승리 시: 가장 많이 잡은 사람
+            mvp = players.stream()
+                    .filter(p -> p.getRole() == Role.POLICE)
+                    .max(Comparator.comparingInt(Player::getCatchCount)) // catchCount 최대값
+                    .orElse(null);
+            if (mvp != null) reason = "총 " + mvp.getCatchCount() + "명 검거";
+        } else {
+            // 도둑 승리 시: 가장 많이 구했거나, 끝까지 살아남은 사람
+            // (여기서는 구출 횟수 우선으로 예시)
+            mvp = players.stream()
+                    .filter(p -> p.getRole() == Role.THIEF)
+                    .max(Comparator.comparingInt(Player::getRescueCount)
+                            .thenComparingDouble(Player::getTotalDistance)) // 동점이면 뛴 거리 순
+                    .orElse(null);
+            if (mvp != null) reason = "동료 " + mvp.getRescueCount() + "명 구출";
+        }
+
+        // null 처리 등은 생략
+        MvpResult mvpResult = MvpResult.builder()
+                .nickname(mvp.getNickname())
+                .reason(reason)
+                .build();
+        return mvpResult;
     }
 }

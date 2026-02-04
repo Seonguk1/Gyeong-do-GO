@@ -7,5 +7,6 @@ public enum GameMessageType {
     PLAYER_STATE_CHANGE,
     PLAYER_CAUGHT,
     PLAYER_LEFT,
+    PLAYER_RESCUED,
     GAME_OVER
 }

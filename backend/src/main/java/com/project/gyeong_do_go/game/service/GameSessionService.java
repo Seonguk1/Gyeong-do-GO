@@ -4,6 +4,7 @@ import com.project.gyeong_do_go.game.component.GameBroadcaster;
 import com.project.gyeong_do_go.game.component.GameReader;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.CatchResponse;
+import com.project.gyeong_do_go.game.dto.response.LeaveResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.entity.Player;
@@ -63,10 +64,9 @@ public class GameSessionService {
 
             player.updateStatus(PlayerStatus.OUT);
 
-            CatchResponse leaveMsg = CatchResponse.builder()
-                    .policeNickname("SYSTEM") // 시스템 알림
-                    .thiefNickname(player.getNickname()) // 나간 사람
-                    .thiefId(player.getId())
+            LeaveResponse leaveMsg = LeaveResponse.builder()
+                    .playerId(player.getId())
+                    .playerNickname(player.getNickname())
                     .build();
 
             gameBroadcaster.sendToRoom(roomId, GameMessageType.PLAYER_LEFT, leaveMsg);
