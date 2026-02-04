@@ -6,5 +6,6 @@ public enum GameMessageType {
     UPDATE_LOCATION,
     PLAYER_STATE_CHANGE,
     PLAYER_CAUGHT,
+    PLAYER_LEFT,
     GAME_OVER
 }

@@ -1,5 +1,7 @@
 package com.project.gyeong_do_go.room.entity;
 
+import com.project.gyeong_do_go.global.entity.BaseTimeEntity;
+import com.project.gyeong_do_go.player.entity.Player;
 import com.project.gyeong_do_go.room.domain.GameStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,21 +20,21 @@ import java.util.List;
 public class Room extends BaseTimeEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "room_id")
     private Long id;
 
     @Column(nullable = false, unique = true, length = 10)
     private String roomCode;
 
-    // 맵 설정
+    // === 게임 설정 ===
     private double centerLat;
     private double centerLon;
     private int mapRadius;      // 기본값 300
     private int prisonRadius;   // 기본값 20
-
-    // 시간 설정 (초 단위)
     private int timeLimit;      // 기본값 600 (10분)
     private int runawayLimit;   // 기본값 180 (3분)
 
+    // === 상태 관리 ===
     @Enumerated(EnumType.STRING)
     private GameStatus roomStatus;
 
@@ -46,39 +48,45 @@ public class Room extends BaseTimeEntity {
     public Room(String roomCode, double centerLat, double centerLon,
                 int mapRadius, int prisonRadius, int timeLimit, int runawayLimit) {
         this.roomCode = roomCode;
-        this.roomStatus = GameStatus.WAITING;
         this.centerLat = centerLat;
         this.centerLon = centerLon;
         this.mapRadius = mapRadius;
         this.prisonRadius = prisonRadius;
         this.timeLimit = timeLimit;
         this.runawayLimit = runawayLimit;
+        this.roomStatus = GameStatus.WAITING;
     }
 
     // === 비즈니스 로직 ===
 
     public void addPlayer(Player player) {
         this.players.add(player);
+        if (player.getRoom() != this) {
+            player.setRoom(this);
+        }
     }
 
-    // 1. 게임 시작 (역할 확인 단계)
+    // 상태 변경 메소드
     public void startRoleCheck() {
         this.roomStatus = GameStatus.ROLE_CHECK;
         this.startedAt = LocalDateTime.now();
     }
 
-    // 2. 도주 시작
     public void startRunaway() {
         this.roomStatus = GameStatus.RUNAWAY;
     }
 
-    // 3. 본게임 시작
     public void startMainGame() {
         this.roomStatus = GameStatus.PLAYING;
     }
 
-    // 4. 게임 종료
     public void finishGame() {
         this.roomStatus = GameStatus.FINISHED;
+    }
+
+    // 설정 변경 (방장)
+    public void updateSettings(int mapRadius, int timeLimit) {
+        this.mapRadius = mapRadius;
+        this.timeLimit = timeLimit;
     }
 }

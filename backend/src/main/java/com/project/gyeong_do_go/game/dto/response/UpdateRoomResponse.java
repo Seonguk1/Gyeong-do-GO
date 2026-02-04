@@ -1,8 +1,8 @@
 package com.project.gyeong_do_go.game.dto.response;
 
-import com.project.gyeong_do_go.room.domain.GameStatus;
 import lombok.Builder;
 import lombok.Getter;
+
 import java.util.List;
 
 @Getter
@@ -27,6 +27,7 @@ public class UpdateRoomResponse {
         private Long id;
         private String nickname;
         private String role;
+        private boolean isHost;
         private boolean isReady;
     }
 }

@@ -1,49 +1,66 @@
 package com.project.gyeong_do_go.game.controller;
 
-import com.project.gyeong_do_go.game.domain.GameMessageType;
-import com.project.gyeong_do_go.game.dto.request.BaseGameRequest;
+import com.project.gyeong_do_go.game.dto.request.CatchRequest;
 import com.project.gyeong_do_go.game.dto.request.JoinGameRequest;
 import com.project.gyeong_do_go.game.dto.request.LocationRequest;
-import com.project.gyeong_do_go.game.dto.response.GameResponse;
-import com.project.gyeong_do_go.game.dto.response.LocationResponse;
-import com.project.gyeong_do_go.game.service.GameService;
+import com.project.gyeong_do_go.game.service.GameActionService;
+import com.project.gyeong_do_go.game.service.GameFlowService;
+import com.project.gyeong_do_go.game.service.GameSessionService;
+import com.project.gyeong_do_go.global.socket.WebSocketSessionManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/game")
 public class GameController {
 
+    private final GameSessionService sessionService;
+    private final GameFlowService flowService;
+    private final GameActionService actionService;
     private final SimpMessagingTemplate template;
-    private final GameService gameService;
+    private final WebSocketSessionManager sessionManager;
 
-    @MessageMapping("/game/join")
-    public void joinGame(@Payload JoinGameRequest request) {
-        gameService.broadcastRoomInfo(request.getRoomId());
+    @MessageMapping("/join")
+    public void joinGame(@Payload JoinGameRequest request, SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+        sessionManager.registerSession(sessionId, request.getPlayerId());
+        sessionService.joinGame(request.getPlayerId());
     }
 
-    @MessageMapping("/game/start")
-    public void startGame(@Payload BaseGameRequest request) {
-        gameService.startGame(request.getRoomId(), request.getPlayerId());
+    @MessageMapping("/start")
+    public void startGame(SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+        Long playerId = sessionManager.getPlayerId(sessionId);
+        flowService.startGame(playerId);
     }
 
-    @MessageMapping("/game/location")
-    public void sendLocation(LocationRequest request) {
-        LocationResponse locationData = LocationResponse.builder()
-                .playerId(request.getPlayerId())
-                .latitude(request.getLatitude())
-                .longitude(request.getLongitude())
-                .build();
+    @MessageMapping("/leave")
+    public void leaveGame(SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+        Long playerId = sessionManager.getPlayerId(sessionId);
+        if (playerId == null) return;
+        sessionService.leaveGame(playerId);
+        sessionManager.removeSession(sessionId);
+    }
 
-        GameResponse<LocationResponse> response = GameResponse.<LocationResponse>builder()
-                .type(GameMessageType.UPDATE_LOCATION) // 타입 명시
-                .data(locationData)
-                .build();
+    @MessageMapping("/location")
+    public void sendLocation(LocationRequest request, SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+        Long playerId = sessionManager.getPlayerId(sessionId);
+        actionService.updateLocation(playerId, request.getLatitude(), request.getLongitude());
+    }
 
-        template.convertAndSend("/topic/room/" + request.getRoomId(), response);
+    @MessageMapping("/catch")
+    public void catchThief(@Payload CatchRequest request, SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+        Long policeId = sessionManager.getPlayerId(sessionId);
+        actionService.catchThief(policeId, request.getTargetId());
     }
 
 //    @MessageExceptionHandler(MethodArgumentNotValidException.class)

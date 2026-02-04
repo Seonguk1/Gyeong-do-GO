@@ -1,6 +1,6 @@
-package com.project.gyeong_do_go.room.dto.request;
+package com.project.gyeong_do_go.player.dto.request;
 
-import com.project.gyeong_do_go.room.domain.Role;
+import com.project.gyeong_do_go.player.domain.Role;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateRoleRequest(

@@ -2,12 +2,11 @@ package com.project.gyeong_do_go.room.service;
 
 import com.project.gyeong_do_go.global.error.CustomException;
 import com.project.gyeong_do_go.global.error.ErrorCode;
+import com.project.gyeong_do_go.player.entity.Player;
+import com.project.gyeong_do_go.player.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.domain.GameStatus;
-import com.project.gyeong_do_go.room.domain.Role;
 import com.project.gyeong_do_go.room.dto.request.CreateRoomRequest;
-import com.project.gyeong_do_go.room.entity.Player;
 import com.project.gyeong_do_go.room.entity.Room;
-import com.project.gyeong_do_go.room.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,8 +42,6 @@ public class RoomService {
                 .runawayLimit(request.runawayLimit())
                 .build();
 
-        roomRepository.save(room);
-
         Player host = Player.builder()
                 .room(room)
                 .nickname(request.nickname())
@@ -53,6 +50,7 @@ public class RoomService {
 
         room.addPlayer(host);
 
+        roomRepository.save(room);
         playerRepository.save(host);
 
         return room;
@@ -94,19 +92,7 @@ public class RoomService {
         room.startRoleCheck();
     }
 
-    @Transactional
-    public void updatePlayerRole(Long playerId, Role newRole) {
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.PLAYER_NOT_FOUND));
-        player.updateRole(newRole);
-    }
 
-    @Transactional
-    public void updatePlayerReady(Long playerId, boolean isReady) {
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.PLAYER_NOT_FOUND));
-        player.toggleReady(isReady);
-    }
 
     private String generateRandomCode() {
         StringBuilder sb = new StringBuilder(6);

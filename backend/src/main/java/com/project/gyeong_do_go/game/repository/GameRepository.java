@@ -2,11 +2,11 @@ package com.project.gyeong_do_go.game.repository;
 
 import com.project.gyeong_do_go.game.dto.response.UpdateRoomResponse;
 import com.project.gyeong_do_go.room.domain.GameStatus;
-import com.project.gyeong_do_go.room.domain.PlayerStatus;
-import com.project.gyeong_do_go.room.domain.Role;
-import com.project.gyeong_do_go.room.entity.Player;
+import com.project.gyeong_do_go.player.domain.PlayerStatus;
+import com.project.gyeong_do_go.player.domain.Role;
+import com.project.gyeong_do_go.player.entity.Player;
 import com.project.gyeong_do_go.room.entity.Room;
-import com.project.gyeong_do_go.room.repository.PlayerRepository;
+import com.project.gyeong_do_go.player.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -137,6 +137,7 @@ public class GameRepository {
                         .id(p.getId())
                         .nickname(p.getNickname())
                         .role(p.getRole() != null ? p.getRole().name() : "NONE")
+                        .isHost(p.isHost())
                         .isReady(p.isReady())
                         .build())
                 .collect(Collectors.toList());

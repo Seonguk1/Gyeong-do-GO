@@ -1,6 +1,6 @@
-package com.project.gyeong_do_go.room.repository;
+package com.project.gyeong_do_go.player.repository;
 
-import com.project.gyeong_do_go.room.entity.Player;
+import com.project.gyeong_do_go.player.entity.Player;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

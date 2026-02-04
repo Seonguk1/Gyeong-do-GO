@@ -1,4 +1,4 @@
-package com.project.gyeong_do_go.room.dto.request;
+package com.project.gyeong_do_go.player.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 

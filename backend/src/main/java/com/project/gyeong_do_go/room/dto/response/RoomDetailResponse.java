@@ -1,6 +1,6 @@
 package com.project.gyeong_do_go.room.dto.response;
 
-import com.project.gyeong_do_go.room.domain.Role;
+import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.room.entity.Room;
 
 import java.util.List;

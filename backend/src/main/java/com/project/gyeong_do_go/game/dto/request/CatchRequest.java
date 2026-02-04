@@ -5,6 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class JoinGameRequest{
-    private Long playerId;
+public class CatchRequest {
+    private Long targetId;
 }
