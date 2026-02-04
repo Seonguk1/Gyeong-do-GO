@@ -4,13 +4,14 @@ import com.project.gyeong_do_go.game.component.GameBroadcaster;
 import com.project.gyeong_do_go.game.component.GameReader;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.CatchResponse;
-import com.project.gyeong_do_go.game.dto.response.LocationResponse;
 import com.project.gyeong_do_go.game.dto.response.RescueResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
 import com.project.gyeong_do_go.global.util.GeometryUtil;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.player.entity.Player;
+import com.project.gyeong_do_go.player.entity.PlayerRedis;
+import com.project.gyeong_do_go.player.repository.PlayerRedisRepository;
 import com.project.gyeong_do_go.player.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.domain.GameStatus;
 import com.project.gyeong_do_go.room.entity.Room;
@@ -27,6 +28,7 @@ import java.util.List;
 public class GameActionService {
     private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
+    private final PlayerRedisRepository playerRedisRepository;
     private final GameFlowService gameFlowService;
     private final GameBroadcaster gameBroadcaster;
     private final GameReader  gameReader;
@@ -34,32 +36,18 @@ public class GameActionService {
 
     @Transactional
     public void updateLocation(Long playerId, double latitude, double longitude) {
-        Player player = gameReader.getPlayer(playerId);
-        Room room = player.getRoom();
-        Long roomId = room.getId();
-        if (room.getRoomStatus() != GameStatus.RUNAWAY && room.getRoomStatus() != GameStatus.PLAYING) {
-            return;
-        }
+        PlayerRedis playerRedis = playerRedisRepository.findById(playerId)
+                .orElse(PlayerRedis.builder()
+                        .playerId(playerId)
+                        .latitude(latitude)
+                        .longitude(longitude)
+                        .totalDistance(0.0)
+                        .build());
 
-        // 거리 계산 (이전 좌표가 있다면)
-        double dist = GeometryUtil.calculateDistance(player.getLatitude(), player.getLongitude(), latitude, longitude);
+        playerRedis.updatePosition(latitude, longitude);
+        playerRedisRepository.save(playerRedis);
 
-        // 튀는 값(GPS 에러로 순간이동) 제외하고 누적
-        if (dist >= 100.0) { return; }
-
-        player.addDistance(dist);
-
-        player.updateLocation(latitude, longitude);
-
-        // 위치 저장 (Redis 또는 DB/Memory)
-
-        LocationResponse locationData = LocationResponse.builder()
-                .playerId(playerId)
-                .latitude(latitude)
-                .longitude(longitude)
-                .build();
-
-        gameBroadcaster.sendToRoom(roomId, GameMessageType.UPDATE_LOCATION, locationData);
+        gameBroadcaster.broadcastLocation(playerId, latitude, longitude);
 
         // 검거 로직
     }

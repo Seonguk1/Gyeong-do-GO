@@ -13,11 +13,9 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/game")
 public class GameController {
 
     private final GameSessionService sessionService;
@@ -26,21 +24,21 @@ public class GameController {
     private final SimpMessagingTemplate template;
     private final WebSocketSessionManager sessionManager;
 
-    @MessageMapping("/join")
+    @MessageMapping("/game/join")
     public void joinGame(@Payload JoinGameRequest request, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         sessionManager.registerSession(sessionId, request.getPlayerId());
         sessionService.joinGame(request.getPlayerId());
     }
 
-    @MessageMapping("/start")
+    @MessageMapping("/game/start")
     public void startGame(SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Long playerId = sessionManager.getPlayerId(sessionId);
         flowService.startGame(playerId);
     }
 
-    @MessageMapping("/leave")
+    @MessageMapping("/game/leave")
     public void leaveGame(SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Long playerId = sessionManager.getPlayerId(sessionId);
@@ -49,21 +47,21 @@ public class GameController {
         sessionManager.removeSession(sessionId);
     }
 
-    @MessageMapping("/location")
+    @MessageMapping("/game/location")
     public void sendLocation(LocationRequest request, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Long playerId = sessionManager.getPlayerId(sessionId);
         actionService.updateLocation(playerId, request.getLatitude(), request.getLongitude());
     }
 
-    @MessageMapping("/catch")
+    @MessageMapping("/game/catch")
     public void catchThief(@Payload CatchRequest request, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Long policeId = sessionManager.getPlayerId(sessionId);
         actionService.catchThief(policeId, request.getTargetId());
     }
 
-    @MessageMapping("/rescue")
+    @MessageMapping("/game/rescue")
     public void rescuePrisoners(SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Long playerId = sessionManager.getPlayerId(sessionId);

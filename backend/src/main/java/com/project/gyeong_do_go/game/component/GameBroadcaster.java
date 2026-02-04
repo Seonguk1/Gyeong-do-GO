@@ -3,8 +3,10 @@ package com.project.gyeong_do_go.game.component;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResponse;
 import com.project.gyeong_do_go.game.dto.response.GameStartResponse;
+import com.project.gyeong_do_go.game.dto.response.LocationResponse;
 import com.project.gyeong_do_go.game.dto.response.UpdateRoomResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
+import com.project.gyeong_do_go.player.entity.Player;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ import java.time.Instant;
 public class GameBroadcaster {
     private final SimpMessagingTemplate template;
     private final GameRepository gameRepository;
+    private final GameReader gameReader;
 
     public void sendToRoom(Long roomId, GameMessageType type, Object data) {
         GameResponse<Object> response = GameResponse.builder()
@@ -46,5 +49,17 @@ public class GameBroadcaster {
 
     public void broadcastCatch(Long roomId, String policeName, String thiefName) {
         // ... 검거 메시지 조립 후 sendToRoom 호출
+    }
+
+    public void broadcastLocation(Long playerId, double latitude, double longitude) {
+        Player player = gameReader.getPlayer(playerId);
+        Long roomId = player.getRoom().getId();
+        LocationResponse locationData = LocationResponse.builder()
+                .playerId(playerId)
+                .latitude(latitude)
+                .longitude(longitude)
+                .build();
+
+            sendToRoom(roomId, GameMessageType.UPDATE_LOCATION, locationData);
     }
 }

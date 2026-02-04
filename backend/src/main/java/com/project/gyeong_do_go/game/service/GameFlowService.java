@@ -4,14 +4,16 @@ import com.project.gyeong_do_go.game.component.GameBroadcaster;
 import com.project.gyeong_do_go.game.component.GameReader;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResultResponse;
-import com.project.gyeong_do_go.game.dto.response.GameResultResponse.MvpResult;
 import com.project.gyeong_do_go.game.repository.GameRepository;
 import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.player.entity.Player;
+import com.project.gyeong_do_go.player.repository.PlayerRedisRepository;
 import com.project.gyeong_do_go.player.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.domain.GameStatus;
 import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -29,10 +31,18 @@ import java.util.List;
 public class GameFlowService {
     private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
+    private final PlayerRedisRepository playerRedisRepository;
     private final RoomRepository roomRepository;
     private final GameBroadcaster gameBroadcaster;
     private final GameReader  gameReader;
     private final TaskScheduler taskScheduler;
+
+    @Getter
+    @AllArgsConstructor
+    public class MvpResult {
+        private String nickname;
+        private String reason;
+    }
 
     // 자기 자신을 주입받음 (순환 참조 방지 위해 @Lazy 사용)
     @Lazy
@@ -104,7 +114,22 @@ public class GameFlowService {
         }
     }
 
-    private void finishGame(Long roomId, Role winnerTeam) {
+    @Transactional
+    public void finishGame(Long roomId, Role winnerTeam) {
+        List<Player> players = gameRepository.getPlayers(roomId);
+
+        for (Player p : players) {
+            // Redis에서 최종 위치/이동거리 조회
+            playerRedisRepository.findById(p.getId()).ifPresent(redisData -> {
+
+                double finalDistance = redisData.getTotalDistance();
+                p.addDistance(finalDistance);
+
+                // Redis 데이터 삭제
+                playerRedisRepository.delete(redisData);
+            });
+        }
+
         MvpResult mvp = calculateMvp(roomId, winnerTeam);
 
         gameRepository.updateRoomStatus(roomId, "FINISHED");
@@ -141,10 +166,6 @@ public class GameFlowService {
         }
 
         // null 처리 등은 생략
-        MvpResult mvpResult = MvpResult.builder()
-                .nickname(mvp.getNickname())
-                .reason(reason)
-                .build();
-        return mvpResult;
+        return new MvpResult(mvp.getNickname(), reason);
     }
 }
