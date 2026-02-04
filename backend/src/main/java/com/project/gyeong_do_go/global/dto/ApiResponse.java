@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.project.gyeong_do_go.global.error.ErrorCode;
 import lombok.Getter;
 
-import java.util.List;
-
 @Getter
 public class ApiResponse<T> {
 
@@ -21,6 +19,9 @@ public class ApiResponse<T> {
     }
 
     // 성공 응답 (Static Factory)
+    public static <T> ApiResponse<T> success() {
+        return new ApiResponse<>(true, null, null);
+    }
     public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>(true, data, null);
     }

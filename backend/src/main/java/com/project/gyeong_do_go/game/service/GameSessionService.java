@@ -14,11 +14,8 @@ import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -99,14 +96,5 @@ public class GameSessionService {
 
             gameFlowService.checkGameOverCondition(roomId);
         }
-    }
-
-    @Scheduled(cron = "0 0 4 * * *") // 매일 새벽 4시 실행
-    @Transactional
-    public void cleanupOldRooms() {
-        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
-        // 어제 이전에 만들어진 방들 모두 삭제 (Cascade 설정 때문에 Player도 같이 삭제됨)
-        roomRepository.deleteByCreatedAtBefore(yesterday);
-        log.info("오래된 방 데이터 삭제 완료");
     }
 }

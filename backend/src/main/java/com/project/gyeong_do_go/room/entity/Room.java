@@ -28,7 +28,7 @@ public class Room extends BaseTimeEntity {
 
     // === 게임 설정 ===
     private double centerLat;
-    private double centerLon;
+    private double centerLng;
     private int mapRadius;      // 기본값 300
     private int prisonRadius;   // 기본값 20
     private int timeLimit;      // 기본값 600 (10분)
@@ -49,7 +49,7 @@ public class Room extends BaseTimeEntity {
                 int mapRadius, int prisonRadius, int timeLimit, int runawayLimit) {
         this.roomCode = roomCode;
         this.centerLat = centerLat;
-        this.centerLon = centerLon;
+        this.centerLng = centerLon;
         this.mapRadius = mapRadius;
         this.prisonRadius = prisonRadius;
         this.timeLimit = timeLimit;
@@ -84,9 +84,12 @@ public class Room extends BaseTimeEntity {
         this.roomStatus = GameStatus.FINISHED;
     }
 
-    // 설정 변경 (방장)
-    public void updateSettings(int mapRadius, int timeLimit) {
-        this.mapRadius = mapRadius;
-        this.timeLimit = timeLimit;
+    public void updateSettings(Double lat, Double lng, Integer mapR, Integer prisonR, Integer time, Integer runTime) {
+        if (lat != null) this.centerLat = lat;
+        if (lng != null) this.centerLng = lng;
+        if (mapR != null) this.mapRadius = mapR;
+        if (prisonR != null) this.prisonRadius = prisonR;
+        if (time != null) this.timeLimit = time;
+        if (runTime != null) this.runawayLimit = runTime;
     }
 }

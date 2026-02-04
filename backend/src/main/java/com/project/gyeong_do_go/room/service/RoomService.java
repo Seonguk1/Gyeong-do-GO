@@ -1,11 +1,13 @@
 package com.project.gyeong_do_go.room.service;
 
+import com.project.gyeong_do_go.game.component.GameBroadcaster;
 import com.project.gyeong_do_go.global.error.CustomException;
 import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.player.entity.Player;
 import com.project.gyeong_do_go.player.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.domain.GameStatus;
 import com.project.gyeong_do_go.room.dto.request.CreateRoomRequest;
+import com.project.gyeong_do_go.room.dto.request.RoomSettingRequest;
 import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final PlayerRepository playerRepository;
+    private final GameBroadcaster gameBroadcaster;
 
     private static final String CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final SecureRandom random = new SecureRandom();
@@ -72,6 +75,27 @@ public class RoomService {
                 .build();
 
         return playerRepository.save(player);
+    }
+
+    @Transactional
+    public void updateRoomSettings(Long roomId, RoomSettingRequest req) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+
+        // 방장 권한 체크 (필수)
+        // (실무에선 SecurityContext에서 꺼내온 ID와 room.getHostId() 비교)
+
+        if (room.getRoomStatus() != GameStatus.WAITING) {
+            throw new IllegalStateException("게임 대기 중에만 설정을 변경할 수 있습니다.");
+        }
+
+        room.updateSettings(
+                req.centerLat(), req.centerLng(),
+                req.mapRadius(), req.prisonRadius(),
+                req.timeLimit(), req.runawayLimit()
+        );
+
+        gameBroadcaster.broadcastRoomInfo(roomId);
     }
 
     public Room getRoomDetail(Long roomId) {

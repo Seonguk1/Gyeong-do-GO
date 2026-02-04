@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,7 @@ public class GameRepository{
                 .roomCode(room.getRoomCode())
                 .roomStatus(room.getRoomStatus().name())
                 .centerLat(room.getCenterLat())
-                .centerLon(room.getCenterLon())
+                .centerLon(room.getCenterLng())
                 .mapRadius(room.getMapRadius())
                 .prisonRadius(room.getPrisonRadius())
                 .timeLimit(room.getTimeLimit())
@@ -117,6 +118,11 @@ public class GameRepository{
     @Transactional
     public void saveAll(List<Player> players) {
         playerRepository.saveAll(players);
+    }
+
+    public void deleteOldRooms(LocalDateTime standardTime) {
+        roomRepository.deleteByCreatedAtBefore(standardTime);
+        // 여기서 방송하지 마세요! 삭제만 하세요.
     }
 
     // ==========================================

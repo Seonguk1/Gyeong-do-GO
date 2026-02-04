@@ -108,7 +108,7 @@ public class GameActionService {
 
         double distance = GeometryUtil.calculateDistance(
                 rescuer.getLatitude(), rescuer.getLongitude(),
-                room.getCenterLat(), room.getCenterLon()
+                room.getCenterLat(), room.getCenterLng()
         );
         if (distance > room.getPrisonRadius()) {
             throw new IllegalStateException("감옥과 너무 멉니다. 더 가까이 가세요!");
