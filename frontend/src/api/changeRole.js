@@ -1,0 +1,10 @@
+import httpClient from "./httpClient";
+
+const changeRole = async (data) =>{
+    const responseData = await httpClient('PATCH','/api/rooms/{roomId}/players/role',data)
+    return responseData
+}
+export default changeRole;
+// "hostUserId": hostId,
+// "title": title,
+// "capacity": capacity,

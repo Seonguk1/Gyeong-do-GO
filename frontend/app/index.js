@@ -47,7 +47,6 @@ export default function Index() {
             // 1. post request 요청 -> 성공 시 서버가 방 코드 보내줌
             // 2. 서버한테 받은 정보를 가지고 router.push 진행
             const coords = await getCurrentCoords();
-            console.log()
             useCreateRoom({
               "nickname": hostNickName,
               "timeLimit":playTime,

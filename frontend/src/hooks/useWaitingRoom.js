@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 const useWaitingRoom = (playerId) => {
   const { roomId } = useLocalSearchParams();
-  const { roomData, connected, connectToRoom, disconnect } = useSocket();
+  const { roomData, connected, connectToRoom, leaveRoom } = useSocket();
 
   // 방에 진입할 때 연결 시작
   useEffect(() => {
@@ -13,6 +13,9 @@ const useWaitingRoom = (playerId) => {
     } else {
       console.log('roomId 또는 playerId가 없어서 실행 안 됨');
     }
+    return () => {
+      leaveRoom(roomId, playerId); // 서버에 나가기 알림 + 연결 해제
+  };
   }, [roomId, playerId]);
 
   // roomData가 서버로부터 올 때마다 역할별로 자동 분류
@@ -26,14 +29,12 @@ const useWaitingRoom = (playerId) => {
 
     // 1. 방장 찾기 (서버 데이터에 isHost 필드가 없다면 보통 첫 번째 사람이거나 별도 로직 필요)
     // 일단 기존 코드 형식대로 isHost를 찾습니다.
-    const host = players.find(p => p.isHost === true) || players[0]; // 없으면 첫번째 사람을 방장으로 간주
-    const joiner = players.filter(p => p.id !== host?.id)
     return {
-      host: host,
+      host: players.find(p => p.isHost === true),
       // 2. 경찰 필터링
-      police: joiner.filter(p => p.role === 'POLICE'),
+      police: players.filter(p => p.role === 'POLICE'),
       // 3. 도둑 필터링
-      thief: joiner.filter(p => p.role === 'THIEF')
+      thief: players.filter(p => p.role === 'THIEF')
     };
   }, [roomData]);
 
