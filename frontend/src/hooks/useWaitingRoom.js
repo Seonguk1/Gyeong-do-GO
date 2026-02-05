@@ -30,7 +30,7 @@ const useWaitingRoom = (playerId) => {
     // 1. 방장 찾기 (서버 데이터에 isHost 필드가 없다면 보통 첫 번째 사람이거나 별도 로직 필요)
     // 일단 기존 코드 형식대로 isHost를 찾습니다.
     return {
-      host: players.find(p => p.isHost === true),
+      host: players.find(p => p.host === true),
       // 2. 경찰 필터링
       police: players.filter(p => p.role === 'POLICE'),
       // 3. 도둑 필터링
