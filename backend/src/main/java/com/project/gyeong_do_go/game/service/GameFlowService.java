@@ -5,6 +5,8 @@ import com.project.gyeong_do_go.game.component.GameReader;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResultResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
+import com.project.gyeong_do_go.global.error.CustomException;
+import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.player.entity.Player;
@@ -53,7 +55,7 @@ public class GameFlowService {
     public void startGame(Long playerId) {
         Player player = gameReader.getPlayer(playerId);
         if (!player.isHost()) {
-            throw new IllegalStateException("방장만 게임을 시작할 수 있습니다.");
+            throw new CustomException(ErrorCode.NOT_HOST);
         }
         Room room = player.getRoom();
         Long roomId = room.getId();
@@ -72,7 +74,7 @@ public class GameFlowService {
         Instant finishTime = Instant.now().plusSeconds(5);
         gameBroadcaster.broadcastPhase(roomId, GameStatus.STARTING, finishTime);
         // this가 아니라 self를 통해 호출해야 트랜잭션이 걸림
-        taskScheduler.schedule(() -> self.startRunawayPhase(roomId), finishTime);
+        taskScheduler.schedule(() -> self.startRoleCheck(roomId), finishTime);
     }
 
     private void assignPrisonerNumbers(Room room) {

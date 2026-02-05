@@ -31,13 +31,6 @@ public class GameController {
         sessionService.joinGame(request.getPlayerId());
     }
 
-    @MessageMapping("/game/start")
-    public void startGame(SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Long playerId = sessionManager.getPlayerId(sessionId);
-        flowService.startGame(playerId);
-    }
-
     @MessageMapping("/game/leave")
     public void leaveGame(SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
