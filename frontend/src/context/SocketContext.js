@@ -15,7 +15,7 @@ export const SocketProvider = ({ children }) => {
     client.current = new Client({
   // 1. 주소는 원래대로 (웹소켓 빼기)
   //brokerURL: 'ws://192.168.201.137:8080/ws',
-  webSocketFactory: () => new WebSocket('ws://192.168.201.137:8080/ws'),
+  webSocketFactory: () => new WebSocket('ws://10.50.73.22:8080/ws'),
 
   // 2. 버전 협상 에러 방지 (아까 말씀하신 그 코드)
   stompVersions: new Versions(['1.2', '1.1']),
@@ -49,14 +49,27 @@ export const SocketProvider = ({ children }) => {
     client.current.activate();
   };
 
-  const disconnect = () => {
-    if (client.current) {
+  const leaveRoom = (roomId, playerId) => {
+  if (client.current && client.current.connected) {
+    // 1. 서버에 나가기 메시지 전송
+    client.current.publish({
+      destination: '/app/game/leave',
+      body: JSON.stringify({ 
+      }),
+    });
+    console.log(`📤 나가기 요청 전송: 방 ${roomId}, 플레이어 ${playerId}`);
+
+    // 2. 아주 짧은 대기 후 연결 종료 (메시지가 서버로 날아갈 시간 확보)
+    setTimeout(() => {
       client.current.deactivate();
-    }
-  };
+      setConnected(false);
+      setRoomData(null);
+    }, 100);
+  }
+};
 
   return (
-    <SocketContext.Provider value={{ roomData, connected, connectToRoom, disconnect }}>
+    <SocketContext.Provider value={{ roomData, connected, connectToRoom, leaveRoom }}>
       {children}
     </SocketContext.Provider>
   );
