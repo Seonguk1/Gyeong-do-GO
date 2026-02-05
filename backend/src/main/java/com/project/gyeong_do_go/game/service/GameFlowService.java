@@ -5,6 +5,7 @@ import com.project.gyeong_do_go.game.component.GameReader;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResultResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
+import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.player.entity.Player;
 import com.project.gyeong_do_go.player.repository.PlayerRedisRepository;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -60,6 +62,10 @@ public class GameFlowService {
 
         if (room.getRoomStatus() != GameStatus.WAITING) {
             throw new IllegalStateException("이미 게임이 진행 중이거나 종료된 방입니다.");
+        }
+
+        if (playerRepository.existsByRoomIdAndIsReadyFalse(roomId)) {
+            throw new IllegalStateException("모든 플레이어가 준비 상태가 되어야 합니다.");
         }
 
         gameRepository.updateRoomStatus(roomId, "ROLE_CHECK");
@@ -167,5 +173,40 @@ public class GameFlowService {
 
         // null 처리 등은 생략
         return new MvpResult(mvp.getNickname(), reason);
+    }
+
+    @Transactional
+    public void restartGame(Long playerId) {
+        Player host = gameReader.getPlayer(playerId);
+        if (!host.isHost()) {
+            throw new IllegalStateException("방장만 재시작을 할 수 있습니다.");
+        }
+
+        Room room = host.getRoom();
+        Long roomId = room.getId();
+
+        // 2. 방 상태 검증 (FINISHED 상태일 때만 가능)
+        if (room.getRoomStatus() != GameStatus.FINISHED) {
+            throw new IllegalStateException("게임이 종료된 상태에서만 재시작 가능합니다.");
+        }
+        room.updateStatus(GameStatus.WAITING);
+        room.setStartedAt(null); // 시작 시간 초기화
+
+        List<Player> players = room.getPlayers();
+        List<Long> playerIds = new ArrayList<>(); // Redis 삭제용 ID 모음
+
+        for (Player p : players) {
+            p.setReady(false);
+            p.setStatus(PlayerStatus.ALIVE);
+            p.updateLocation(0.0, 0.0);
+            playerIds.add(p.getId());
+        }
+
+        playerRedisRepository.deleteAllById(playerIds);
+
+        // 만약 쿨타임 등을 별도 키로 관리했다면 그것도 삭제
+        // redisTemplate.delete("catch_cooldown:" + playerId); ...
+
+        gameBroadcaster.broadcastRoomInfo(roomId);
     }
 }

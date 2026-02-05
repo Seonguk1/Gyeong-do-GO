@@ -13,4 +13,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
 
     @Query("SELECT p FROM Player p WHERE p.room.id = :roomId AND p.role = 'THIEF' AND p.status = 'OUT'")
     List<Player> findPrisonersByRoomId(@Param("roomId") Long roomId);
+
+    boolean existsByRoomIdAndIsReadyFalse(Long roomId);
 }

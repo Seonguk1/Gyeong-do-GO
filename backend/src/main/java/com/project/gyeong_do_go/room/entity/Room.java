@@ -4,10 +4,7 @@ import com.project.gyeong_do_go.global.entity.BaseTimeEntity;
 import com.project.gyeong_do_go.player.entity.Player;
 import com.project.gyeong_do_go.room.domain.GameStatus;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "rooms")
 public class Room extends BaseTimeEntity {
@@ -58,6 +56,8 @@ public class Room extends BaseTimeEntity {
     }
 
     // === 비즈니스 로직 ===
+
+    public void updateStatus(GameStatus gameStatus) {this.roomStatus = gameStatus;}
 
     public void addPlayer(Player player) {
         this.players.add(player);
