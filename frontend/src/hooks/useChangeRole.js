@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import changeRole from "../api/changeRole";
 
-const useChangeRole = async (data) => {
-    const responseData = await changeRole(data);
+const useChangeRole = async (roomId, data) => {
+    const responseData = await changeRole(roomId, data);
 }
 export default useChangeRole;
