@@ -15,7 +15,7 @@ const renderUserItem = ({ item }) => (
 
 // 로직과 UI를 담은 내부 컴포넌트
 function RoomContent({ data }) {
-  const { host, policeTeam, thiefTeam, changeRole } = useWaitingRoom(data.roomId);
+  const { host, police, thief} = useWaitingRoom(data.playerId);
 
   return (
     <View style={{flex:1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2E3748'}}>
@@ -36,7 +36,7 @@ function RoomContent({ data }) {
       <View style={{flex:35, flexDirection: 'row', justifyContent: 'space-between'}}>
         <View style={{marginHorizontal:5, backgroundColor:'#D9D9D9', padding:5}}>
           <FlatList
-            data={thiefTeam}
+            data={thief}
             renderItem={renderUserItem}
             keyExtractor={(item) => item.id.toString()}
             ListEmptyComponent={<Text>참가자가 없습니다.</Text>}
@@ -44,7 +44,7 @@ function RoomContent({ data }) {
         </View>
         <View style={{marginHorizontal:5, backgroundColor:'#D9D9D9', padding:5}}>
           <FlatList
-            data={policeTeam}
+            data={police}
             renderItem={renderUserItem}
             keyExtractor={(item) => item.id.toString()}
             ListEmptyComponent={<Text>참가자가 없습니다.</Text>}
