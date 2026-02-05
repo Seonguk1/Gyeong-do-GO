@@ -1,5 +1,6 @@
 package com.project.gyeong_do_go.room.controller;
 
+import com.project.gyeong_do_go.game.service.GameFlowService;
 import com.project.gyeong_do_go.global.dto.ApiResponse;
 import com.project.gyeong_do_go.global.error.CustomException;
 import com.project.gyeong_do_go.global.error.ErrorCode;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/rooms")
 public class RoomController {
-
+    private final GameFlowService flowService;
     private final RoomService roomService;
 
     @PostMapping
@@ -68,12 +69,12 @@ public class RoomController {
         return ApiResponse.success(RoomDetailResponse.from(room, playerId));
     }
 
-    @PatchMapping("/{roomId}/start")
+    @PostMapping("/{roomId}/start")
     public ApiResponse<GameStartResponse> startGame(
             @PathVariable Long roomId,
             @RequestBody @Valid GameStartRequest request
     ) {
-        roomService.startGame(roomId, request.playerId());
+        flowService.startGame(request.playerId());
         Room room = roomService.getRoomDetail(roomId);
 
         return ApiResponse.success(new GameStartResponse(

@@ -6,6 +6,8 @@ import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.CatchResponse;
 import com.project.gyeong_do_go.game.dto.response.RescueResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
+import com.project.gyeong_do_go.global.error.CustomException;
+import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.global.util.GeometryUtil;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.domain.Role;
@@ -53,9 +55,11 @@ public class GameActionService {
     }
 
     @Transactional
-    public void catchThief(Long policeId, Long thiefId) {
+    public void catchThief(Long policeId, String targetNumber) {
         Player police = gameRepository.getPlayer(policeId);
-        Player thief = gameRepository.getPlayer(thiefId);
+        Room room = police.getRoom();
+        Player thief = playerRepository.findByRoomIdAndPrisonerNumber(room.getId(), targetNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.PLAYER_NOT_FOUND));
 
         validateCatchRequest(police, thief);
 

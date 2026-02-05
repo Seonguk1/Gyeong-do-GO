@@ -67,10 +67,12 @@ public class Room extends BaseTimeEntity {
     }
 
     // 상태 변경 메소드
-    public void startRoleCheck() {
-        this.roomStatus = GameStatus.ROLE_CHECK;
+    public void startStarting() {
+        this.roomStatus = GameStatus.STARTING;
         this.startedAt = LocalDateTime.now();
     }
+
+    public void startRoleCheck() { this.roomStatus = GameStatus.ROLE_CHECK; }
 
     public void startRunaway() {
         this.roomStatus = GameStatus.RUNAWAY;

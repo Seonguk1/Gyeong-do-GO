@@ -38,6 +38,8 @@ public class Player extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isHost;
 
+    private String prisonerNumber;
+
     private double latitude;
     private double longitude;
 

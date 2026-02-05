@@ -31,13 +31,6 @@ public class GameController {
         sessionService.joinGame(request.getPlayerId());
     }
 
-    @MessageMapping("/game/start")
-    public void startGame(SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Long playerId = sessionManager.getPlayerId(sessionId);
-        flowService.startGame(playerId);
-    }
-
     @MessageMapping("/game/leave")
     public void leaveGame(SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
@@ -58,7 +51,7 @@ public class GameController {
     public void catchThief(@Payload CatchRequest request, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Long policeId = sessionManager.getPlayerId(sessionId);
-        actionService.catchThief(policeId, request.getTargetId());
+        actionService.catchThief(policeId, request.getTargetNumber());
     }
 
     @MessageMapping("/game/rescue")

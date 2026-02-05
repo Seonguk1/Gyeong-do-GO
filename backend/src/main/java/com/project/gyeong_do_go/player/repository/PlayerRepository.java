@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PlayerRepository extends JpaRepository<Player, Long> {
     // 특정 방에 있는 모든 플레이어 찾기 (필요 시 사용)
@@ -15,4 +16,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
     List<Player> findPrisonersByRoomId(@Param("roomId") Long roomId);
 
     boolean existsByRoomIdAndIsReadyFalse(Long roomId);
+
+    Optional<Player> findByRoomIdAndPrisonerNumber(Long roomId, String prisonerNumber);
 }

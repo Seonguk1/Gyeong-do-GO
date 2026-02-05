@@ -9,6 +9,8 @@ import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class GameReader {
@@ -19,6 +21,10 @@ public class GameReader {
     public Player getPlayer(Long playerId) {
         return playerRepository.findById(playerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAYER_NOT_FOUND));
+    }
+
+    public List<Player> getPlayersInRoom(Long roomId) {
+        return playerRepository.findByRoomId(roomId);
     }
 
     public Room getRoom(Long roomId) {

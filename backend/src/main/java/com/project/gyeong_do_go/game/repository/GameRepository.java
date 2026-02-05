@@ -101,6 +101,7 @@ public class GameRepository{
         // 엔터티의 비즈니스 로직 메서드를 호출 (Dirty Checking으로 자동 저장됨)
         switch (status) {
             case ROLE_CHECK -> room.startRoleCheck();
+            case STARTING -> room.startStarting();
             case RUNAWAY -> room.startRunaway();
             case PLAYING -> room.startMainGame();
             case FINISHED -> room.finishGame();

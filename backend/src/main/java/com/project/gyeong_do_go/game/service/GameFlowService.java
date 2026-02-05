@@ -5,6 +5,8 @@ import com.project.gyeong_do_go.game.component.GameReader;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResultResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
+import com.project.gyeong_do_go.global.error.CustomException;
+import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.player.entity.Player;
@@ -23,9 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +55,7 @@ public class GameFlowService {
     public void startGame(Long playerId) {
         Player player = gameReader.getPlayer(playerId);
         if (!player.isHost()) {
-            throw new IllegalStateException("방장만 게임을 시작할 수 있습니다.");
+            throw new CustomException(ErrorCode.NOT_HOST);
         }
         Room room = player.getRoom();
         Long roomId = room.getId();
@@ -68,40 +68,60 @@ public class GameFlowService {
             throw new IllegalStateException("모든 플레이어가 준비 상태가 되어야 합니다.");
         }
 
-        gameRepository.updateRoomStatus(roomId, "ROLE_CHECK");
+        assignPrisonerNumbers(room);
 
-        Instant finishTime = Instant.now().plusSeconds(10);
-
-        gameBroadcaster.broadcastPhase(roomId, "ROLE_CHECK", finishTime);
-
+        gameRepository.updateRoomStatus(roomId, "STARTING");
+        Instant finishTime = Instant.now().plusSeconds(5);
+        gameBroadcaster.broadcastPhase(roomId, GameStatus.STARTING, finishTime);
         // this가 아니라 self를 통해 호출해야 트랜잭션이 걸림
+        taskScheduler.schedule(() -> self.startRoleCheck(roomId), finishTime);
+    }
+
+    private void assignPrisonerNumbers(Room room) {
+        List<Player> thieves = room.getPlayers().stream()
+                .filter(p -> p.getRole() == Role.THIEF)
+                .toList();
+
+        // 중복 방지를 위한 Set
+        Set<String> usedNumbers = new HashSet<>();
+        Random random = new Random();
+
+        for (Player thief : thieves) {
+            String number;
+            do {
+                int num = random.nextInt(9000) + 1000;
+                number = String.valueOf(num);
+            } while (usedNumbers.contains(number));
+
+            usedNumbers.add(number);
+            thief.setPrisonerNumber(number);
+        }
+    }
+
+    @Transactional
+    public void startRoleCheck(Long roomId) {
+        gameRepository.updateRoomStatus(roomId, "ROLE_CHECK");
+        Instant finishTime = Instant.now().plusSeconds(10);
+        gameBroadcaster.broadcastPhase(roomId, GameStatus.ROLE_CHECK, finishTime);
         taskScheduler.schedule(() -> self.startRunawayPhase(roomId), finishTime);
     }
 
     @Transactional
     public void startRunawayPhase(Long roomId) {
         int runawayLimit = gameRepository.getRunawayLimit(roomId);
-
         gameRepository.updateRoomStatus(roomId, "RUNAWAY");
-
         Instant finishTime = Instant.now().plusSeconds(runawayLimit);
-
-        gameBroadcaster.broadcastPhase(roomId, "RUNAWAY", finishTime);
-
+        gameBroadcaster.broadcastPhase(roomId, GameStatus.RUNAWAY, finishTime);
         taskScheduler.schedule(() -> self.startMainGame(roomId), finishTime);
     }
 
     @Transactional
     public void startMainGame(Long roomId) {
-        int timeLimit = gameRepository.getTimeLimit(roomId); // 예: 600초
-
+        int timeLimit = gameRepository.getTimeLimit(roomId);
         gameRepository.updateRoomStatus(roomId, "PLAYING");
-
         Instant finishTime = Instant.now().plusSeconds(timeLimit);
-
         // 메인 게임은 다음 스케줄(게임 종료)이 필요하다면 여기에 추가
-        gameBroadcaster. broadcastPhase(roomId, "PLAYING", finishTime);
-
+        gameBroadcaster. broadcastPhase(roomId, GameStatus.PLAYING, finishTime);
         taskScheduler.schedule(() -> self.timeOver(roomId), finishTime);
     }
 

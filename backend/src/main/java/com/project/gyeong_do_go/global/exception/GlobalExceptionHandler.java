@@ -6,7 +6,6 @@ import com.project.gyeong_do_go.global.error.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,7 +24,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.fail(e.getErrorCode(), e.getErrorCode().getMessage()));
     }
 
-    // 2. @Valid 유효성 검사 실패 처리 (여기가 요청하신 부분!)
+    // 2. @Valid 유효성 검사 실패 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
 

@@ -51,6 +51,7 @@ public class RoomService {
                 .isHost(true)
                 .build();
 
+        host.setReady(true);
         room.addPlayer(host);
 
         roomRepository.save(room);
@@ -102,21 +103,6 @@ public class RoomService {
         return roomRepository.findByIdWithPlayers(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
     }
-
-    @Transactional
-    public void startGame(Long roomId, Long playerId) {
-        Room room = getRoomDetail(roomId);
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.PLAYER_NOT_FOUND));
-
-        if (!player.isHost()) {
-            throw new CustomException(ErrorCode.NOT_HOST);
-        }
-
-        room.startRoleCheck();
-    }
-
-
 
     private String generateRandomCode() {
         StringBuilder sb = new StringBuilder(6);
