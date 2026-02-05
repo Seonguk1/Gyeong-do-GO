@@ -69,7 +69,6 @@ public class GameActionService {
             throw new IllegalArgumentException("거리가 너무 멀어 검거할 수 없습니다. 거리: " + (int)distance + "m");
         }
 
-        thief.arrest();
         police.increaseCatchCount();
         thief.markAsCaught();
 
@@ -98,7 +97,7 @@ public class GameActionService {
             throw new IllegalArgumentException("이미 검거된 도둑입니다.");
         }
         GameStatus status = police.getRoom().getRoomStatus();
-        if (status != GameStatus.PLAYING && status != GameStatus.RUNAWAY) { // 게임 진행 중인가?
+        if (status != GameStatus.PLAYING) {
             throw new IllegalArgumentException("게임 진행 중에만 검거할 수 있습니다.");
         }
     }
@@ -141,7 +140,7 @@ public class GameActionService {
         if (rescuer.getRole() != Role.THIEF) {
             throw new IllegalStateException("도둑만 탈옥을 시도할 수 있습니다.");
         }
-        if (rescuer.getStatus() == PlayerStatus.OUT) {
+        if (rescuer.getStatus() != PlayerStatus.ALIVE) {
             throw new IllegalStateException("죽은 자는 탈옥을 시도할 수 없습니다.");
         }
         // 게임 진행 중인지 확인 (RUNAWAY 때는 감옥 기능 비활성 등 규칙에 따라 추가)

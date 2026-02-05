@@ -79,14 +79,6 @@ public class Player extends BaseTimeEntity {
         this.status = status;
     }
 
-    public void arrest() {
-        this.status = PlayerStatus.JAILED;
-    }
-
-    public void rescue() {
-        this.status = PlayerStatus.ALIVE;
-    }
-
     public void updateLocation(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
@@ -109,7 +101,11 @@ public class Player extends BaseTimeEntity {
 
     // 잡혔을 때 (생존 시간 계산 종료점)
     public void markAsCaught() {
-        this.status = PlayerStatus.OUT;
+        this.status = PlayerStatus.JAILED;
         this.caughtAt = LocalDateTime.now();
+    }
+
+    public void rescue() {
+        this.status = PlayerStatus.ALIVE;
     }
 }

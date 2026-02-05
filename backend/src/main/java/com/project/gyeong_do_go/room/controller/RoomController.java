@@ -5,10 +5,7 @@ import com.project.gyeong_do_go.global.dto.ApiResponse;
 import com.project.gyeong_do_go.global.error.CustomException;
 import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.player.entity.Player;
-import com.project.gyeong_do_go.room.dto.request.CreateRoomRequest;
-import com.project.gyeong_do_go.room.dto.request.GameStartRequest;
-import com.project.gyeong_do_go.room.dto.request.JoinRoomRequest;
-import com.project.gyeong_do_go.room.dto.request.RoomSettingRequest;
+import com.project.gyeong_do_go.room.dto.request.*;
 import com.project.gyeong_do_go.room.dto.response.*;
 import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.room.service.RoomService;
@@ -83,5 +80,12 @@ public class RoomController {
         ));
     }
 
-
+    @PostMapping("/{roomId}/reset")
+    public ApiResponse<Void> resetToLobby(
+            @PathVariable Long roomId,
+            @RequestBody ResetRoomRequest request
+    ) {
+        roomService.resetToLobby(request.playerId());
+        return ApiResponse.success();
+    }
 }

@@ -41,7 +41,7 @@ public class GameController {
     }
 
     @MessageMapping("/game/location")
-    public void sendLocation(LocationRequest request, SimpMessageHeaderAccessor headerAccessor) {
+    public void sendLocation(@Payload LocationRequest request, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Long playerId = sessionManager.getPlayerId(sessionId);
         actionService.updateLocation(playerId, request.getLatitude(), request.getLongitude());
@@ -61,6 +61,16 @@ public class GameController {
         actionService.rescuePrisoners(playerId);
     }
 
+    public record RegisterRequest(Long playerId) {}
+    @MessageMapping("/game/register")
+    public void registerPlayer(@Payload RegisterRequest request, SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+        Long playerId = request.playerId();
+        // 세션 매니저에 현재 세션과 플레이어 ID를 강제로 연결
+        sessionManager.registerSession(sessionId, playerId);
+
+        System.out.println("🚀 [테스트 전용] 세션 등록 완료: " + sessionId + " => " + playerId);
+    }
 //    @MessageExceptionHandler(MethodArgumentNotValidException.class)
 //    @SendToUser("/queue/errors")
 //    public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {

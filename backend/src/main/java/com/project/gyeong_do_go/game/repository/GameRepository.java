@@ -81,7 +81,7 @@ public class GameRepository{
         // (성능 최적화를 위해선 JPQL로 "SELECT p FROM Player p WHERE p.room.id = :roomId AND p.role = 'THIEF' AND p.status != 'OUT'" 쿼리를 만드는 게 좋음)
         return playerRepository.findByRoomId(roomId).stream()
                 .filter(p -> p.getRole() == Role.THIEF)
-                .filter(p -> !PlayerStatus.JAILED.equals(p.getStatus()))
+                .filter(p -> PlayerStatus.ALIVE.equals(p.getStatus()))
                 .collect(Collectors.toList());
     }
 
