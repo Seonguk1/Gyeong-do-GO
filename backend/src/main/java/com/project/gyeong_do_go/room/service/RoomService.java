@@ -51,6 +51,7 @@ public class RoomService {
                 .isHost(true)
                 .build();
 
+        host.setReady(true);
         room.addPlayer(host);
 
         roomRepository.save(room);
