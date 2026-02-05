@@ -1,4 +1,4 @@
-package com.project.gyeong_do_go.room.dto.response;
+package com.project.gyeong_do_go.player.dto.response;
 
 public record UpdateReadyResponse(
         Long playerId,

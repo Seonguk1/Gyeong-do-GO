@@ -19,7 +19,10 @@ public enum ErrorCode {
 
     // Player
     PLAYER_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAYER_NOT_FOUND", "플레이어를 찾을 수 없습니다."),
-    NOT_HOST(HttpStatus.FORBIDDEN, "NOT_HOST", "방장만 접근 가능합니다.");
+    NOT_HOST(HttpStatus.FORBIDDEN, "NOT_HOST", "방장만 접근 가능합니다."),
+
+    // Game
+    DISTANCE_TOO_FAR(HttpStatus.OK, "DISTANCE_TOO_FAR", "거리가 너무 멉니다.");
 
     private final HttpStatus httpStatus;
     private final String code;    // 응답 JSON의 "code" 필드에 들어갈 값

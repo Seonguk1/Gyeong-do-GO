@@ -1,23 +1,24 @@
 package com.project.gyeong_do_go.game.repository;
 
 import com.project.gyeong_do_go.game.dto.response.UpdateRoomResponse;
+import com.project.gyeong_do_go.player.domain.PlayerStatus;
+import com.project.gyeong_do_go.player.domain.Role;
+import com.project.gyeong_do_go.player.entity.Player;
+import com.project.gyeong_do_go.player.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.domain.GameStatus;
-import com.project.gyeong_do_go.room.domain.PlayerStatus;
-import com.project.gyeong_do_go.room.domain.Role;
-import com.project.gyeong_do_go.room.entity.Player;
 import com.project.gyeong_do_go.room.entity.Room;
-import com.project.gyeong_do_go.room.repository.PlayerRepository;
 import com.project.gyeong_do_go.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class GameRepository {
+public class GameRepository{
 
     private final RoomRepository roomRepository;
     private final PlayerRepository playerRepository;
@@ -36,7 +37,7 @@ public class GameRepository {
                 .roomCode(room.getRoomCode())
                 .roomStatus(room.getRoomStatus().name())
                 .centerLat(room.getCenterLat())
-                .centerLon(room.getCenterLon())
+                .centerLon(room.getCenterLng())
                 .mapRadius(room.getMapRadius())
                 .prisonRadius(room.getPrisonRadius())
                 .timeLimit(room.getTimeLimit())
@@ -84,6 +85,10 @@ public class GameRepository {
                 .collect(Collectors.toList());
     }
 
+    public List<Player> findPrisonersByRoomId(Long roomId) {
+        return playerRepository.findPrisonersByRoomId(roomId);
+    }
+
     // ==========================================
     //  변경 로직 (Write) - @Transactional 필수
     // ==========================================
@@ -104,13 +109,6 @@ public class GameRepository {
     }
 
     @Transactional
-    public void updatePlayerLocation(Long roomId, Long playerId, double lat, double lng) {
-        Player player = getPlayer(playerId);
-
-        player.updateLocation(lat, lng);
-    }
-
-    @Transactional
     public void updatePlayerStatus(Long playerId, PlayerStatus status) {
         Player player = getPlayer(playerId);
 
@@ -120,6 +118,11 @@ public class GameRepository {
     @Transactional
     public void saveAll(List<Player> players) {
         playerRepository.saveAll(players);
+    }
+
+    public void deleteOldRooms(LocalDateTime standardTime) {
+        roomRepository.deleteByCreatedAtBefore(standardTime);
+        // 여기서 방송하지 마세요! 삭제만 하세요.
     }
 
     // ==========================================
@@ -137,6 +140,7 @@ public class GameRepository {
                         .id(p.getId())
                         .nickname(p.getNickname())
                         .role(p.getRole() != null ? p.getRole().name() : "NONE")
+                        .isHost(p.isHost())
                         .isReady(p.isReady())
                         .build())
                 .collect(Collectors.toList());

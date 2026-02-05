@@ -3,9 +3,12 @@ package com.project.gyeong_do_go.room.controller;
 import com.project.gyeong_do_go.global.dto.ApiResponse;
 import com.project.gyeong_do_go.global.error.CustomException;
 import com.project.gyeong_do_go.global.error.ErrorCode;
-import com.project.gyeong_do_go.room.dto.request.*;
+import com.project.gyeong_do_go.player.entity.Player;
+import com.project.gyeong_do_go.room.dto.request.CreateRoomRequest;
+import com.project.gyeong_do_go.room.dto.request.GameStartRequest;
+import com.project.gyeong_do_go.room.dto.request.JoinRoomRequest;
+import com.project.gyeong_do_go.room.dto.request.RoomSettingRequest;
 import com.project.gyeong_do_go.room.dto.response.*;
-import com.project.gyeong_do_go.room.entity.Player;
 import com.project.gyeong_do_go.room.entity.Room;
 import com.project.gyeong_do_go.room.service.RoomService;
 import jakarta.validation.Valid;
@@ -46,6 +49,16 @@ public class RoomController {
         ));
     }
 
+    @PutMapping("/{roomId}/settings")
+    public ApiResponse<RoomSettingResponse> updateRoomSettings(
+            @PathVariable Long roomId,
+            @RequestBody RoomSettingRequest request
+            // @AuthenticationPrincipal 등으로 방장 본인인지 체크 필요
+    ) {
+        roomService.updateRoomSettings(roomId, request);
+        return ApiResponse.success();
+    }
+
     @GetMapping("/{roomId}")
     public ApiResponse<RoomDetailResponse> getRoomDetail(
             @PathVariable Long roomId,
@@ -69,21 +82,5 @@ public class RoomController {
         ));
     }
 
-    @PatchMapping("/{roomId}/players/role")
-    public ApiResponse<UpdateRoleResponse> updateRole(
-            @PathVariable Long roomId,
-            @RequestBody @Valid UpdateRoleRequest request
-    ) {
-        roomService.updatePlayerRole(request.playerId(), request.role());
-        return ApiResponse.success(new UpdateRoleResponse(request.playerId(), request.role()));
-    }
 
-    @PatchMapping("/{roomId}/players/ready")
-    public ApiResponse<UpdateReadyResponse> updateReady(
-            @PathVariable Long roomId,
-            @RequestBody @Valid UpdateReadyRequest request
-    ) {
-        roomService.updatePlayerReady(request.playerId(), request.isReady());
-        return ApiResponse.success(new UpdateReadyResponse(request.playerId(), request.isReady()));
-    }
 }
