@@ -6,5 +6,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class CatchRequest {
-    private Long targetId;
+    private String targetNumber;
 }

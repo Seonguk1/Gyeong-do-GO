@@ -1,6 +1,7 @@
 package com.project.gyeong_do_go.game.domain;
 
 public enum GameMessageType {
+    // SendToRoom
     UPDATE_ROOM,
     ROOM_STATUS_CHANGE,
     UPDATE_LOCATION,
@@ -8,5 +9,8 @@ public enum GameMessageType {
     PLAYER_CAUGHT,
     PLAYER_LEFT,
     PLAYER_RESCUED,
-    GAME_OVER
+    GAME_OVER,
+
+    // SendToPlayer
+    PRISONER_NUMBER
 }

@@ -53,9 +53,11 @@ public class GameActionService {
     }
 
     @Transactional
-    public void catchThief(Long policeId, Long thiefId) {
+    public void catchThief(Long policeId, String targetNumber) {
         Player police = gameRepository.getPlayer(policeId);
-        Player thief = gameRepository.getPlayer(thiefId);
+        Room room = police.getRoom();
+        Player thief = playerRepository.findByRoomIdAndPrisonerNumber(room.getId(), targetNumber)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 죄수 번호입니다."));
 
         validateCatchRequest(police, thief);
 
