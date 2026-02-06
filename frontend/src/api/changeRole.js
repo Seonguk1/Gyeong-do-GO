@@ -5,6 +5,3 @@ const changeRole = async (roomId, data) =>{
     return responseData
 }
 export default changeRole;
-// "hostUserId": hostId,
-// "title": title,
-// "capacity": capacity,

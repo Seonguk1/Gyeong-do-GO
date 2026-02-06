@@ -1,4 +1,4 @@
-const BASE_URL = 'http://10.50.73.22:8080';
+const BASE_URL = 'http://172.30.1.61:8080';
 
 const httpClient= async (method, endPoint, data) => {
     const response = await fetch( `${BASE_URL+endPoint}` , {
