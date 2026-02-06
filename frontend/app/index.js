@@ -19,6 +19,7 @@ export default function Index() {
   //join
   const [roomCode, setRoomCode] = useState(null);
   const [joinerNickName, setJoinerNickName] = useState(null);
+  
 
 
 

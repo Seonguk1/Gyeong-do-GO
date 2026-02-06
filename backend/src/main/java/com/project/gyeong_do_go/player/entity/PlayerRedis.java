@@ -14,7 +14,7 @@ public class PlayerRedis {
     private Long playerId; // key 역할을 함
 
     private double latitude;
-    private double longitude;
+    private double longitude; 
 
     @Builder.Default
     private double totalDistance = 0.0;

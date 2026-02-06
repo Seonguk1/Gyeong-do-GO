@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PlayerService {
-    private PlayerRepository playerRepository;
+    private final PlayerRepository playerRepository;
     private final GameBroadcaster gameBroadcaster;
 
     @Transactional

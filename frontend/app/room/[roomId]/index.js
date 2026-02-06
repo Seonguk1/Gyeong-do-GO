@@ -1,17 +1,16 @@
 // src/app/room/[id].js
 import { useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
-import  useWaitingRoom  from '../../../src/hooks/useWaitingRoom';
 // SocketProvider 임포트 경로를 확인해주세요!
-import { SocketProvider } from '../../../src/context/SocketContext'; 
-import useChangeRole from '../../../src/hooks/useChangeRole';
-import { Button } from '@react-navigation/elements';
 import CustomModal from '../../../src/components/CustomModal';
 import InputArea from '../../../src/components/InputArea';
+import { SocketProvider } from '../../../src/context/SocketContext';
+import roomSubscription from '../../../src/hooks/roomSubscription';
+import useChangeRole from '../../../src/hooks/useChangeRole';
 import { useLocation } from '../../../src/hooks/useLocation';
 import useSettingRoom from '../../../src/hooks/useSettingRoom';
-
+import useReady from '../../../src/hooks/useReady';
 const renderUserItem = ({ item }) => (
   <View>
     <Text>{item.nickname}</Text>
@@ -21,13 +20,14 @@ const renderUserItem = ({ item }) => (
 
 // 로직과 UI를 담은 내부 컴포넌트
 function RoomContent({ data }) {
-  const { host, police, thief} = useWaitingRoom(data.playerId);
+  const { host, police, thief, roomData, players} = roomSubscription(data.playerId);
   const [visible, setVisible] = useState(false);
-  const [map, setMap] = useState(useWaitingRoom(data.mapRadius));
-  const [prison, setPrison] = useState(useWaitingRoom(data.prisonRadius));
-  const [playTime, setPlayTime] = useState(useWaitingRoom(data.timeLimit));
-  const [prepTime, setPrepTime] = useState(useWaitingRoom(data.runawayLimit));
+  const [map, setMap] = useState(roomSubscription(data.mapRadius));
+  const [prison, setPrison] = useState(roomSubscription(data.prisonRadius));
+  const [playTime, setPlayTime] = useState(roomSubscription(data.timeLimit));
+  const [prepTime, setPrepTime] = useState(roomSubscription(data.runawayLimit));
   const { getCurrentCoords } = useLocation();
+  const me = players?.find(p => String(p.id) === String(data.playerId))
   return (
     <View style={{flex:1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2E3748'}}>
       <CustomModal
@@ -123,11 +123,31 @@ function RoomContent({ data }) {
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', marginVertical:10, gap:5}} >
-              <TouchableOpacity style={{ backgroundColor: 'gray' }}>
-                <Text>준비하기</Text>
-              </TouchableOpacity>
-            </View>
+              me.ready ? (<View style={{flexDirection: 'row', justifyContent: 'space-between', marginVertical:10, gap:5}} >
+                <TouchableOpacity style={{ backgroundColor: 'gray' }}
+                  onPress={()=>{
+                    useReady(data.roomId,{
+                      "playerId": data.playerId,
+                      "isReady": false
+                    });
+                  }}
+                >
+                  <Text>대기</Text>
+                </TouchableOpacity>
+              </View>) : (
+              <View style={{flexDirection: 'row', justifyContent: 'space-between', marginVertical:10, gap:5}} >
+                <TouchableOpacity style={{ backgroundColor: 'gray' }}
+                  onPress={()=>{
+                    useReady(data.roomId,{
+                      "playerId": data.playerId,
+                      "isReady": true
+                    });
+                  }}
+                >
+                  <Text>준비하기</Text>
+                </TouchableOpacity>
+              </View>
+              )
           )
         ) : (
           /* 3. 데이터가 아직 안 들어왔을 때 */
@@ -144,6 +164,7 @@ function RoomContent({ data }) {
 // 메인 엔트리 포인트
 export default function RoomDetailScreen() {
   const data = useLocalSearchParams();
+  
 
   return (
     <SocketProvider roomId={data.roomId} playerId={data.playerId}>
