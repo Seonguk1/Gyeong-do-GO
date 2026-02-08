@@ -10,7 +10,7 @@ import useJoinRoom from '@hooks/useJoinRoom';
 
 export default function Entry_JoinRoom() {
     const router = useRouter();
-    const [nickname, setNickname] = useState("");
+    const [nickname, setNickname] = useState("참가자B");
     const [roomCode, setRoomCode] = useState("");
     return (
         <ScreenContainer
@@ -65,7 +65,7 @@ export default function Entry_JoinRoom() {
                                 title={"입장하기"}
                                 onPress={() => {
                                     useJoinRoom({
-                                        "nickname": nickName,
+                                        "nickname": nickname,
                                         "roomCode": roomCode
                                     }, router);
                                 }}

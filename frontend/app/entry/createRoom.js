@@ -10,11 +10,11 @@ import useCreateRoom from '@hooks/useCreateRoom';
 
 export default function Entry_createRoom() {
     const router = useRouter();
-    const [nickname, setNickname] = useState("");
-    const [runawayTime, setRunawayTime] = useState("");
-    const [playTime, setPlayTime] = useState("");
-    const [mapRadius, setMapRadius] = useState("");
-    const [prisonRadius, setPrisonRadius] = useState("");
+    const [nickname, setNickname] = useState("방장A");
+    const [runawayTime, setRunawayTime] = useState("60");
+    const [playTime, setPlayTime] = useState("600");
+    const [mapRadius, setMapRadius] = useState("300");
+    const [prisonRadius, setPrisonRadius] = useState("30");
     return (
         <ScreenContainer
             backgroundColor="#fff"

@@ -1,7 +1,7 @@
 import { TextInput } from "react-native";
 
 
-const CustomInput = ({ value, onChangeText, style, placeholder, keyboardType = 'default' }) => {
+const CustomInput = ({ value="디폴트", onChangeText, style, placeholder, keyboardType = 'default' }) => {
     return (
         <TextInput
             value={value}

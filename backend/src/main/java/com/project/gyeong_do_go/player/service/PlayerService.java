@@ -38,7 +38,7 @@ public class PlayerService {
         if (!player.getRoom().getId().equals(roomId)) {
             throw new IllegalArgumentException("잘못된 방 요청입니다.");
         }
-        player.setReady(isReady);
+        player.setReady(!isReady);
         gameBroadcaster.broadcastRoomInfo(roomId);
     }
 }
