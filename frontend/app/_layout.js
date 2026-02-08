@@ -26,8 +26,14 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-        <Stack screenOptions={{ headerShown: false }} />
-    </SafeAreaProvider>
+    <SocketProvider>
+      <SafeAreaProvider>
+          <Stack screenOptions={{ headerShown: false }} >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="room/[roomId]/index" />
+            <Stack.Screen name="game/[roomId]/index" />
+          </Stack>
+      </SafeAreaProvider>
+    </SocketProvider>
   )
 }

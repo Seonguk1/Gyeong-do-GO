@@ -4,7 +4,7 @@ import { useSocket } from '../context/SocketContext';
 
 const roomSubscription = (playerId) => {
   const { roomId } = useLocalSearchParams();
-  const { client, roomData, setRoomData, startVisible, setStartVisible, connected, connectToRoom, leaveRoom } = useSocket();
+  const { client, roomData, setRoomData, visible, setVisible, connected, connectToRoom, leaveRoom } = useSocket();
 
   useEffect(() => {
     if (roomId && playerId) {
@@ -27,16 +27,29 @@ const roomSubscription = (playerId) => {
           }
           else if (data.type == "ROOM_STATUS_CHANGE"){
             if (data.data.roomStatus == "STARTING"){
-              setStartVisible(true);
+              setVisible(true);
             }
             else if (data.roomStatus == "ROLE_CHECK"){
-
+              setVisible(false);
+              router.push({
+              pathname: `@game/${roomData.data.roomId}/role_check`,
+              params: { 
+                      roomData: roomData.data, //최신 룸 정보(웹소켓으로 받은 것)
+                      playerId: playerId
+              }
+              });
             }
             else if (data.roomStatus == "RUNAWAY"){
-              
+              setVisible(true);
+              router.push({
+              pathname: `@game/${roomData.data.roomId}/index`,
+              params: {
+                      playerId: playerId
+              }
+              });
             }
             else if (data.roomStatus == "PLAYING"){
-              
+              setVisible(false);
             }
             else if (data.roomStatus == "FINISHED"){
               
@@ -79,9 +92,9 @@ const roomSubscription = (playerId) => {
 
   const start = useMemo(() => {
     return {
-      modalBool: startVisible
+      modalBool: visible
     };
-  }, [startVisible]);
+  }, [visible]);
 
   return {
     roomData: roomSource.roomData,
