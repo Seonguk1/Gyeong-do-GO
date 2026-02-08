@@ -12,6 +12,7 @@
       "@context/*": ["src/context/*"],
       "@assets/*": ["src/assets/*"],
       "@api/*": ["src/api/*"],
+      "@utils/*": ["src/utils/*"],
       "@/*": ["./*"] 
     }
   },

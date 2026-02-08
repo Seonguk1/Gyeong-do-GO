@@ -1,13 +1,13 @@
 import { useLocalSearchParams } from "expo-router";
 import { View, Text, StyleSheet, Image } from "react-native";
 import ScreenContainer from "@components/global/ScreenContainer";
-import useRoomSocket from "@hooks/useRoomSocket"; // ✨ 훅 재사용!
+import useRoomSocket from "@hooks/useRoomSocket";
+import { typography } from "../../src/constants/typography";
 
 export default function RoleCheckScreen() {
     const { roomId, playerId } = useLocalSearchParams();
 
-    // ✨ 여기서 다시 훅을 부르면, 최신 'me'(내 정보)를 줍니다.
-    const { me, connected } = useRoomSocket(roomId, Number(playerId));
+    const { me, timeLeft, prisonerNumber } = useRoomSocket(roomId, Number(playerId));
 
     // 데이터 로딩 중일 때 처리
     if (!me) {
@@ -17,23 +17,32 @@ export default function RoleCheckScreen() {
             </ScreenContainer>
         );
     }
+    
     return (
         <ScreenContainer>
             <View style={styles.container}>
-                <Text style={styles.title}>당신의 역할은?</Text>
+                <Text style={typography.title}>역할을 확인해주세요</Text>
 
-                {/* ✨ 역할에 따라 다른 UI 보여주기 */}
-                {me.role === "POLICE" ? (
-                    <View style={styles.roleBox}>
-                        <Text style={styles.policeText}>👮‍♂️ 경찰 👮‍♂️</Text>
-                        <Text style={styles.desc}>도둑을 모두 잡으세요!</Text>
-                    </View>
-                ) : (
-                    <View style={styles.roleBox}>
-                        <Text style={styles.thiefText}>💰 도둑 💰</Text>
-                        <Text style={styles.desc}>경찰을 피해 도망치세요!</Text>
+
+                <View style={styles.roleBox}>
+                    {me.role === "POLICE" ? (<Image source={require('@assets/images/role_police.png')} />
+                    ) : (<Image source={require('@assets/images/role_thief.png')} style={{ width: 308, height: 347 }} />)}
+                </View>
+
+                {me.role === "THIEF" && (
+                    <View style={styles.numberContainer}>
+                        <Text style={typography.title}>{prisonerNumber || "----"}</Text>
                     </View>
                 )}
+
+                <View style={{ alignItems: "center" }}>
+                    <Text style={typography.title}>도주 시간까지</Text>
+                    {/* 여기서 30초부터 줄어드는 숫자가 자동으로 보임 */}
+                    <Text style={[typography.title, { color: timeLeft < 10 ? "red" : "#fff" }]}>
+                        00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+                    </Text>
+                </View>
+
 
             </View>
         </ScreenContainer>

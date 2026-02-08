@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, useMemo } from 
 import { Client } from '@stomp/stompjs';
 import 'fast-text-encoding';
 import { useRouter } from 'expo-router';
-
+import { getSecondsDiff } from '@utils/timeUtils'
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
@@ -10,10 +10,19 @@ export const SocketProvider = ({ children }) => {
   const clientRef = useRef(null);
   const [connected, setConnected] = useState(false);
   const [roomData, setRoomData] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [prisonerNumber, setPrisonerNumber] = useState(null);
 
-  // 소켓 연결 함수 (한 번만 실행됨)
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timerId = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timerId);
+  }, [timeLeft]);
+
   const connect = (roomId, playerId) => {
-    if (clientRef.current?.active) return; // 이미 연결돼 있으면 패스
+    if (clientRef.current?.active) return;
 
     console.log(`🔌 [Global Socket] 연결 시작: Room ${roomId}`);
 
@@ -38,8 +47,13 @@ export const SocketProvider = ({ children }) => {
             // 게임 시작 등의 상태 변경 처리
             const status = received.data?.roomStatus || received.roomStatus;
             console.log("방 상태 변경:", status);
-
-            if (status == "ROLE_CHECK") {
+            if (status == "STARTING") {
+              const serverTime = received.data?.startTime;
+              const diff = getSecondsDiff(serverTime);
+              setTimeLeft(diff > 0 ? diff : 5);
+            }
+            else if (status == "ROLE_CHECK") {
+              setTimeLeft(5);
               router.replace({
                 pathname: "/game/roleCheck",
                 params: {
@@ -48,6 +62,24 @@ export const SocketProvider = ({ children }) => {
                 }
               });
             }
+            else if (status == "RUNAWAY") {
+              setTimeLeft(60);
+              // router.replace({
+              //   pathname: "/game/runaway",
+              //   params: {
+              //     roomId: roomId,
+              //     playerId: playerId
+              //   }
+              // });
+            }
+          }
+        });
+
+        client.subscribe(`/queue/player/${playerId}`, (message) => {
+          const received = JSON.parse(message.body);
+          if (received.type === "PRISONER_NUMBER") {
+            console.log("🔢 죄수 번호 수신:", received.data);
+            setPrisonerNumber(received.data); // 죄수 번호 저장
           }
         });
 
@@ -72,11 +104,12 @@ export const SocketProvider = ({ children }) => {
       clientRef.current.deactivate();
       setConnected(false);
       setRoomData(null);
+      setPrisonerNumber(null);
     }
   };
 
   return (
-    <SocketContext.Provider value={{ connect, disconnect, connected, roomData }}>
+    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber }}>
       {children}
     </SocketContext.Provider>
   );
