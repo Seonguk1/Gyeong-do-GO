@@ -1,38 +1,64 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { Client, Versions } from '@stomp/stompjs';
+import 'fast-text-encoding';
+import { createContext, useContext, useRef, useState } from 'react';
 
 const SocketContext = createContext(null);
 
-export const SocketProvider = ({ children, roomId, playerId }) => {
-  const socket = useRef(null);
-  const [lastMessage, setLastMessage] = useState(null);
+export const SocketProvider = ({ children }) => {
+  const [roomData, setRoomData] = useState(null); 
+  const [connected, setConnected] = useState(false);
+  const client = useRef(null);
 
-  useEffect(() => {
-    // 1. 소켓 연결 (앱 실행 시 혹은 방 입장 시 딱 한 번)
-    socket.current = new WebSocket(`ws://192.168.0.106:8080/room/${roomId}`);
+  const connectToRoom = (roomId, playerId) => {
+    if (client.current?.connected) return; 
 
-    socket.current.onopen = () => {
-        const enterMessage = {
-            type: "ENTER_ROOM", // 백엔드와 약속한 타입 이름
-            playerId: playerId,
-            roomId: roomId
-        };
-        socket.current.send(JSON.stringify(enterMessage));
-    };
+    client.current = new Client({
+      webSocketFactory: () => new WebSocket('ws://172.30.1.61:8080/ws'),
+      stompVersions: new Versions(['1.2', '1.1']),
+      forceBinaryWSFrames: true,
+      appendMissingNULLonIncoming: true,
 
-    socket.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setLastMessage(data); // 받은 데이터를 전역으로 흘려보냄
-    };
+      onConnect: () => {
+        console.log('✅ 드디어 연결 성공!', roomId);
+        setConnected(true);
+      },
 
-    return () => {
-      // 화면이 바뀌어도 닫지 않음. 앱을 완전히 나갈 때만 닫게 설정 가능
-      // socket.current.close(); 
-    };
-  }, [roomId]);
+      onWebSocketError: (error) => console.log('❌ 웹소켓 에러:', error),
+      onWebSocketClose: (event) => {
+        setConnected(false);
+        console.log('⚠️ 연결 닫힘 코드:', event.code);
+      }
+    });
 
-  // 소켓 객체와 메시지를 하위 훅들이 쓸 수 있게 공유
+    console.log('🚀 activate() 호출됨');
+    client.current.activate();
+  };
+
+  const leaveRoom = (roomId, playerId) => {
+    if (client.current && client.current.connected) {
+      client.current.publish({
+        destination: '/app/game/leave',
+        body: JSON.stringify({}),
+      });
+      console.log(`📤 나가기 요청 전송: 방 ${roomId}, 플레이어 ${playerId}`);
+
+      setTimeout(() => {
+        client.current.deactivate();
+        setConnected(false);
+        setRoomData(null);
+      }, 100);
+    }
+  };
+
   return (
-    <SocketContext.Provider value={{ socket: socket.current, lastMessage }}>
+    <SocketContext.Provider value={{ 
+      client: client.current, 
+      roomData, 
+      setRoomData, 
+      connected, 
+      connectToRoom, 
+      leaveRoom 
+    }}>
       {children}
     </SocketContext.Provider>
   );

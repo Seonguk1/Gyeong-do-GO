@@ -20,9 +20,8 @@ const useCreateRoom = async (data, router) => {
     }
     //정상 실행
     //else{
-        console.log(responseData.data)
         router.push({
-            pathname: `/room/${responseData.data.roomCode}`,
+            pathname: `/room/${responseData.data.roomId}`,
             params: { 
                     roomId: responseData.data.roomId,
                     playerId: responseData.data.playerId,
