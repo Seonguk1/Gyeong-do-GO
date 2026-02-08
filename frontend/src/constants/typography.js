@@ -22,7 +22,7 @@ export const typography = {
   nickname:{
     fontFamily: "Pretendard-Bold",
     fontSize: 15,
-    color: "#000"
+    color: "#fff"
   },
   inputTitle:{
     fontFamily: "Pretendard-Bold",
