@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import CustomInput from "@components/global/CustomInput";
 import CustomBtn from "@components/global/CustomBtn";
+import useJoinRoom from '@hooks/useJoinRoom';
 
 export default function Entry_JoinRoom() {
     const router = useRouter();
@@ -30,25 +31,25 @@ export default function Entry_JoinRoom() {
                 >
                     <View style={styles.innerContent}>
                         <View>
-                            <View style={{marginBottom:61}}>
+                            <View style={{ marginBottom: 61 }}>
                                 <Text style={typography.body}>
                                     안녕하세요 플레이어님!{"\n"}
                                     경도GO에 오신 것을 환영합니다
                                 </Text>
                             </View>
                             <View>
-                                <View style={{marginBottom:20}}>
-                                    <Text style={[typography.inputTitle,{marginBottom:10}]}> 플레이어 닉네임 </Text>
+                                <View style={{ marginBottom: 20 }}>
+                                    <Text style={[typography.inputTitle, { marginBottom: 10 }]}> 플레이어 닉네임 </Text>
                                     <CustomInput
                                         value={nickname}
                                         onChangeText={setNickname}
                                         placeholder="닉네임을 입력해주세요."
-                                        style={{marginBottom:5}}
+                                        style={{ marginBottom: 5 }}
                                     />
                                     <Text style={typography.caption}> 2~10자 이내 </Text>
                                 </View>
 
-                                <View style={{flexDirection:"row", gap:5, marginBottom:10}}>
+                                <View style={{ flexDirection: "row", gap: 5, marginBottom: 10 }}>
                                     <Text style={typography.inputTitle}> 방 코드 </Text>
                                     <Text style={typography.caption}>6자리</Text>
                                 </View>
@@ -62,6 +63,12 @@ export default function Entry_JoinRoom() {
                         <View>
                             <CustomBtn
                                 title={"입장하기"}
+                                onPress={() => {
+                                    useJoinRoom({
+                                        "nickname": nickName,
+                                        "roomCode": roomCode
+                                    }, router);
+                                }}
                             />
                         </View>
                     </View>

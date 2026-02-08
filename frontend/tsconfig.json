@@ -9,6 +9,7 @@
       "@components/*": ["src/components/*"],
       "@constants/*": ["src/constants/*"],
       "@hooks/*": ["src/hooks/*"],
+      "@context/*": ["src/context/*"],
       "@assets/*": ["src/assets/*"],
       "@api/*": ["src/api/*"],
       "@/*": ["./*"] 

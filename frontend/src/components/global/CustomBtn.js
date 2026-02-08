@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { typography } from '../../constants/typography';
+import { typography } from '@constants/typography';
 
 // props로 onPress(함수), text(글자), style(추가 스타일)을 받음
 const CustomBtn = ({ onPress, title, style }) => {

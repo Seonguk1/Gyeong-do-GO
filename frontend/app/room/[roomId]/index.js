@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 // SocketProvider 임포트 경로를 확인해주세요!
-import CustomModal from '../../../src/components/CustomModal';
+import CustomModal from '@components/global/CustomModal';
 import InputArea from '../../../src/components/InputArea';
 import roomSubscription from '../../../src/hooks/roomSubscription';
 import useChangeRole from '../../../src/hooks/useChangeRole';
