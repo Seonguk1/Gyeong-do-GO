@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useSocket } from "@context/SocketContext";
 
 export default function useRoomSocket(roomId, playerId) {
-  const { connect, connected, roomData } = useSocket();
+  const { connect, connected, roomData, timeLeft, prisonerNumber } = useSocket();
 
   // 1. 진입 시 연결 요청 (이미 연결돼 있으면 무시됨)
   useEffect(() => {
@@ -25,5 +25,5 @@ export default function useRoomSocket(roomId, playerId) {
     };
   }, [roomData, playerId]);
 
-  return { connected, roomData, ...result };
+  return { connected, roomData, timeLeft, prisonerNumber, ...result };
 }

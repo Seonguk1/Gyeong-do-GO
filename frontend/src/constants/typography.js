@@ -1,4 +1,9 @@
 export const typography = {
+  title:{
+    fontFamily: "Pretendard-Bold",
+    fontSize: 30,
+    color: "#fff"
+  },
   header:{
     fontFamily: "Pretendard-Bold",
     fontSize: 25,
