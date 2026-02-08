@@ -35,33 +35,6 @@ const roomSubscription = (playerId) => {
     console.log(roomId)
     // 연결이 확실히 되었을 때만 구독 시작
     if (connected && client && client.connected && roomId) {
-<<<<<<< HEAD
-      console.log(`🔌 [Socket] ${roomId}번 방 구독 시작`);
-
-      const subscription = client.subscribe(`/topic/room/${roomId}`, (message) => {
-        const receivedData = JSON.parse(message.body);
-        console.log('📩 [Socket] 메시지 도착:', receivedData.type);
-
-        if (receivedData.type === "UPDATE_ROOM") {
-          // ✨ [핵심 수정 1] 데이터 구조 통일
-          // 소켓으로 온 데이터가 'data' 껍데기 없이 올 경우를 대비해 구조를 맞춰준다.
-          // (API는 보통 { data: {...} } 형태이므로 이에 맞춤)
-          const standardizedData = receivedData.data 
-            ? receivedData 
-            : { ...receivedData, data: receivedData }; // data 키가 없으면 통째로 data 안에 넣음
-
-          // ✨ [핵심 수정 2] 불변성 유지 (강제 리렌더링)
-          // 단순히 setRoomData(standardizedData)라고 하면 주소값이 같을 때 리액트가 무시할 수 있음.
-          // 전개 연산자(...)를 써서 "새로운 객체"로 인식하게 만듦.
-          setRoomData({ ...standardizedData }); 
-        } 
-        else if (receivedData.type === "ROOM_STATUS_CHANGE") {
-          // 구조 분해 할당으로 안전하게 접근
-          const status = receivedData.data?.roomStatus || receivedData.roomStatus;
-
-          if (status === "STARTING") {
-            setStartVisible(true);
-=======
       const subscription = client.subscribe(`/topic/room/${roomId}`, (message) => {
         console.log('📩 소켓 메시지 도착:', message.body);
         const data = JSON.parse(message.body);
@@ -97,7 +70,6 @@ const roomSubscription = (playerId) => {
             else if (data.roomStatus == "FINISHED"){
               
             }
->>>>>>> d3cedd218a85d191457d42bb69293aa3c3c0b337
           }
           else if (status === "ROLE_CHECK") {
             // 역할 확인 로직
