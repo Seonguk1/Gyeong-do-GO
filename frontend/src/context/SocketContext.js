@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
     if (client.current?.connected) return; 
 
     client.current = new Client({
-      webSocketFactory: () => new WebSocket('ws://10.50.103.201:8080/ws'),
+      webSocketFactory: () => new WebSocket('ws://10.50.100.57:8080/ws'),
       stompVersions: new Versions(['1.2', '1.1']),
       forceBinaryWSFrames: true,
       appendMissingNULLonIncoming: true,

@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SocketProvider } from '@context/SocketContext';
 
 // 폰트 로딩 전까지 스플래시 화면이 사라지지 않게 막음
 SplashScreen.preventAutoHideAsync();
@@ -26,8 +27,10 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
+    <SocketProvider>
+      <SafeAreaProvider>
         <Stack screenOptions={{ headerShown: false }} />
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </SocketProvider>
   )
 }

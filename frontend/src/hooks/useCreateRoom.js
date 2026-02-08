@@ -3,7 +3,7 @@ import createRoom from "../api/createRoom";
 
 const useCreateRoom = async (data, router) => {
     const responseData = await createRoom(data);
-
+    console.log(`responseData : ${responseData.data}`)
     //오류 처리
     if(responseData.error != null){
         // if(responseData.error.code == 'INTERNAL_ERROR'){
@@ -23,10 +23,10 @@ const useCreateRoom = async (data, router) => {
         router.push({
             pathname: `/room/${responseData.data.roomId}`,
             params: { 
-                    roomId: responseData.data.roomId,
-                    playerId: responseData.data.playerId,
-                    roomCode: responseData.data.roomCode,
-                    roomStatus: responseData.data.roomStatus
+                    roomId: responseData.data?.roomId,
+                    playerId: responseData.data?.playerId,
+                    roomCode: responseData.data?.roomCode,
+                    roomStatus: responseData.data?.roomStatus
             }
         });
     //}
