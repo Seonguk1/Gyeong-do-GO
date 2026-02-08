@@ -3,7 +3,6 @@ import { Stack } from "expo-router";
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { SocketProvider } from '@context/SocketContext';
 
 // 폰트 로딩 전까지 스플래시 화면이 사라지지 않게 막음
 SplashScreen.preventAutoHideAsync();
@@ -29,7 +28,13 @@ export default function RootLayout() {
   return (
     <SocketProvider>
       <SafeAreaProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+          <Stack screenOptions={{ headerShown: false }} >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="room/[roomId]/index" />
+            <Stack.Screen name="game/[roomId]/index" />
+            <Stack.Screen name="game/[roomId]/role_check" />
+
+          </Stack>
       </SafeAreaProvider>
     </SocketProvider>
   )

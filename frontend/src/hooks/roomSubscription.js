@@ -35,6 +35,7 @@ const roomSubscription = (playerId) => {
     console.log(roomId)
     // 연결이 확실히 되었을 때만 구독 시작
     if (connected && client && client.connected && roomId) {
+<<<<<<< HEAD
       console.log(`🔌 [Socket] ${roomId}번 방 구독 시작`);
 
       const subscription = client.subscribe(`/topic/room/${roomId}`, (message) => {
@@ -60,6 +61,43 @@ const roomSubscription = (playerId) => {
 
           if (status === "STARTING") {
             setStartVisible(true);
+=======
+      const subscription = client.subscribe(`/topic/room/${roomId}`, (message) => {
+        console.log('📩 소켓 메시지 도착:', message.body);
+        const data = JSON.parse(message.body);
+          if (data.type == "UPDATE_ROOM"){
+            setRoomData(data); 
+          }
+          else if (data.type == "ROOM_STATUS_CHANGE"){
+            if (data.data.roomStatus == "STARTING"){
+              setVisible(true);
+            }
+            else if (data.roomStatus == "ROLE_CHECK"){
+              setVisible(false);
+              router.push({
+              pathname: `@game/${roomData.data.roomId}/role_check`,
+              params: { 
+                      roomData: roomData.data, //최신 룸 정보(웹소켓으로 받은 것)
+                      playerId: playerId
+              }
+              });
+            }
+            else if (data.roomStatus == "RUNAWAY"){
+              setVisible(true);
+              router.push({
+              pathname: `@game/${roomData.data.roomId}/index`,
+              params: {
+                      playerId: playerId
+              }
+              });
+            }
+            else if (data.roomStatus == "PLAYING"){
+              setVisible(false);
+            }
+            else if (data.roomStatus == "FINISHED"){
+              
+            }
+>>>>>>> d3cedd218a85d191457d42bb69293aa3c3c0b337
           }
           else if (status === "ROLE_CHECK") {
             // 역할 확인 로직
@@ -118,9 +156,9 @@ const roomSubscription = (playerId) => {
 
   const start = useMemo(() => {
     return {
-      modalBool: startVisible
+      modalBool: visible
     };
-  }, [startVisible]);
+  }, [visible]);
 
   // 훅의 리턴값
   return {
