@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import CustomInput from "@components/global/CustomInput";
 import CustomBtn from "@components/global/CustomBtn";
+import useCreateRoom from '@hooks/useCreateRoom';
 
 export default function Entry_createRoom() {
     const router = useRouter();
@@ -108,7 +109,20 @@ export default function Entry_createRoom() {
                         <View>
                             <CustomBtn
                                 title={"방 생성하기"}
-                                
+                                onPress={async () => {
+                                    // 1. post request 요청 -> 성공 시 서버가 방 코드 보내줌
+                                    // 2. 서버한테 받은 정보를 가지고 router.push 진행
+                                    // const coords = await getCurrentCoords();
+                                    useCreateRoom({
+                                        "nickname": nickname,
+                                        "timeLimit": playTime,
+                                        "runawayLimit": runawayTime,
+                                        "latitude": 123.123,
+                                        "longitude": 12.12,
+                                        "mapRadius": mapRadius,        // 맵 반경 (m) - 기본값: 300
+                                        "prisonRadius": prisonRadius
+                                    }, router);
+                                }}
                             />
                         </View>
                     </View>
