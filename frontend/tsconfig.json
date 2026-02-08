@@ -4,6 +4,8 @@
     "strict": true,
     "baseUrl": "./", 
     "paths": {
+      "@game/*": ["app/game/*"],
+      "@room/*": ["app/room/*"],
       "@components/*": ["src/components/*"],
       "@constants/*": ["src/constants/*"],
       "@hooks/*": ["src/hooks/*"],
