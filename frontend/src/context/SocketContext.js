@@ -7,13 +7,14 @@ const SocketContext = createContext(null);
 export const SocketProvider = ({ children }) => {
   const [roomData, setRoomData] = useState(null); 
   const [connected, setConnected] = useState(false);
+  const [startVisible, setStartVisible] = useState(false);
   const client = useRef(null);
 
   const connectToRoom = (roomId, playerId) => {
     if (client.current?.connected) return; 
 
     client.current = new Client({
-      webSocketFactory: () => new WebSocket('ws://172.30.1.61:8080/ws'),
+      webSocketFactory: () => new WebSocket('ws://10.50.103.201:8080/ws'),
       stompVersions: new Versions(['1.2', '1.1']),
       forceBinaryWSFrames: true,
       appendMissingNULLonIncoming: true,
@@ -55,6 +56,8 @@ export const SocketProvider = ({ children }) => {
       client: client.current, 
       roomData, 
       setRoomData, 
+      startVisible,
+      setStartVisible,
       connected, 
       connectToRoom, 
       leaveRoom 

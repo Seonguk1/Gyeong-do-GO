@@ -1,8 +1,8 @@
-import { Stack } from "expo-router";
 import { useFonts } from 'expo-font';
+import { Stack } from "expo-router";
 import * as SplashScreen from 'expo-splash-screen';
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useEffect } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // 폰트 로딩 전까지 스플래시 화면이 사라지지 않게 막음
 SplashScreen.preventAutoHideAsync();

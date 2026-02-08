@@ -1,16 +1,16 @@
 // src/app/room/[id].js
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 // SocketProvider 임포트 경로를 확인해주세요!
 import CustomModal from '../../../src/components/CustomModal';
 import InputArea from '../../../src/components/InputArea';
-import { SocketProvider } from '../../../src/context/SocketContext';
 import roomSubscription from '../../../src/hooks/roomSubscription';
 import useChangeRole from '../../../src/hooks/useChangeRole';
 import { useLocation } from '../../../src/hooks/useLocation';
-import useSettingRoom from '../../../src/hooks/useSettingRoom';
 import useReady from '../../../src/hooks/useReady';
+import useSettingRoom from '../../../src/hooks/useSettingRoom';
+import useStart from '../../../src/hooks/useStart';
 const renderUserItem = ({ item }) => (
   <View>
     <Text>{item.nickname}</Text>
@@ -20,14 +20,32 @@ const renderUserItem = ({ item }) => (
 
 // 로직과 UI를 담은 내부 컴포넌트
 function RoomContent({ data }) {
-  const { host, police, thief, roomData, players} = roomSubscription(data.playerId);
+  const { host, police, thief, roomData, players, modalBool} = roomSubscription(data.playerId);
   const [visible, setVisible] = useState(false);
   const [map, setMap] = useState(roomSubscription(data.mapRadius));
   const [prison, setPrison] = useState(roomSubscription(data.prisonRadius));
   const [playTime, setPlayTime] = useState(roomSubscription(data.timeLimit));
   const [prepTime, setPrepTime] = useState(roomSubscription(data.runawayLimit));
   const { getCurrentCoords } = useLocation();
+  const [startVisible,setStartVisible] = useState(false);
+  useEffect(() => {
+    setStartVisible(modalBool);
+  }, [modalBool]);
   const me = players?.find(p => String(p.id) === String(data.playerId))
+  const [count, setCount] = useState(5); // 5초 카운트다운 설정
+  useEffect(() => {
+    if (!startVisible) {
+      setCount(5); // 모달이 닫히면 숫자를 초기화
+      return;
+    }
+    const timer = setInterval(() => {
+      setCount((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer); // 메모리 누수 방지
+
+  }, [startVisible]);
+
+
   return (
     <View style={{flex:1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2E3748'}}>
       <CustomModal
@@ -57,6 +75,14 @@ function RoomContent({ data }) {
                     <Text style={{justifyContent: 'center',}}>방 설정</Text>
                   </TouchableOpacity>
       </CustomModal>
+      <CustomModal
+        visible={startVisible}
+        setVisible={setStartVisible}
+      >
+        <Text>게임이 곧 시작됩니다!</Text>
+        <Text>{count > 0 ? count : "START!"}</Text>
+      </CustomModal>
+
       <View style={{flex:20, justifyContent: 'center', alignItems: 'center', marginTop:20, marginBottom:40}}>
         <Text style={{ fontSize: 24 }}>방 참가 코드: {data.roomCode}</Text>
       </View>
@@ -117,8 +143,13 @@ function RoomContent({ data }) {
               >
                 <Text>방 설정</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity style={{ backgroundColor: 'blue' }}>
+              <TouchableOpacity style={{ backgroundColor: 'blue' }}
+                onPress={()=>{
+                    useStart(data.roomId,{
+                      "playerId": data.playerId
+                    });
+                  }}
+              >
                 <Text>게임 시작</Text>
               </TouchableOpacity>
             </View>
@@ -167,8 +198,6 @@ export default function RoomDetailScreen() {
   
 
   return (
-    <SocketProvider roomId={data.roomId} playerId={data.playerId}>
       <RoomContent data={data} />
-    </SocketProvider>
   );
 }

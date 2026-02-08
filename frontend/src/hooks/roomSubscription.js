@@ -4,7 +4,7 @@ import { useSocket } from '../context/SocketContext';
 
 const roomSubscription = (playerId) => {
   const { roomId } = useLocalSearchParams();
-  const { client, roomData, setRoomData, connected, connectToRoom, leaveRoom } = useSocket();
+  const { client, roomData, setRoomData, startVisible, setStartVisible, connected, connectToRoom, leaveRoom } = useSocket();
 
   useEffect(() => {
     if (roomId && playerId) {
@@ -22,7 +22,26 @@ const roomSubscription = (playerId) => {
       const subscription = client.subscribe(`/topic/room/${roomId}`, (message) => {
         console.log('📩 소켓 메시지 도착:', message.body);
         const data = JSON.parse(message.body);
-        setRoomData(data); 
+          if (data.type == "UPDATE_ROOM"){
+            setRoomData(data); 
+          }
+          else if (data.type == "ROOM_STATUS_CHANGE"){
+            if (data.data.roomStatus == "STARTING"){
+              setStartVisible(true);
+            }
+            else if (data.roomStatus == "ROLE_CHECK"){
+
+            }
+            else if (data.roomStatus == "RUNAWAY"){
+              
+            }
+            else if (data.roomStatus == "PLAYING"){
+              
+            }
+            else if (data.roomStatus == "FINISHED"){
+              
+            }
+          }
       });
 
       client.publish({
@@ -58,10 +77,17 @@ const roomSubscription = (playerId) => {
     };
   }, [roomData]);
 
+  const start = useMemo(() => {
+    return {
+      modalBool: startVisible
+    };
+  }, [startVisible]);
+
   return {
     roomData: roomSource.roomData,
     players: roomSource.players,
     connected,
+    modalBool: start.modalBool,
     police: participantsByRole.police,
     thief: participantsByRole.thief,
     host: participantsByRole.host,
