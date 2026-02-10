@@ -27,7 +27,7 @@ export const SocketProvider = ({ children }) => {
     console.log(`🔌 [Global Socket] 연결 시작: Room ${roomId}`);
 
     const client = new Client({
-      brokerURL: 'ws://10.50.100.57:8080/ws', // IP 확인 필수
+      brokerURL: 'ws://192.168.0.195:8080/ws', // IP 확인 필수
       forceBinaryWSFrames: true,
       appendMissingNULLonIncoming: true,
 
