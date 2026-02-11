@@ -4,9 +4,8 @@ import CustomBtn from '@components/global/CustomBtn';
 import { colors } from '@constants/colors';
 import ScreenContainer from '@components/global/ScreenContainer';
 import { typography } from '@constants/typography';
-import NaverMapView, { Marker } from "react-native-naver-map";
-import { useLocation } from '../../src/hooks/useLocation';
-import { useEffect, useState } from 'react';
+import { NaverMapView, NaverMapMarker, NaverMapMarkerOverlay } from '@mj-studio/react-native-naver-map';import { useLocation } from '../../src/hooks/useLocation';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Game_Main() {
     const router = useRouter();
