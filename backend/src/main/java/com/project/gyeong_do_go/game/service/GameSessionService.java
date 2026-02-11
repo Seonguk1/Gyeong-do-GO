@@ -2,10 +2,11 @@ package com.project.gyeong_do_go.game.service;
 
 import com.project.gyeong_do_go.game.component.GameBroadcaster;
 import com.project.gyeong_do_go.game.component.GameReader;
+import com.project.gyeong_do_go.game.component.GameValidator;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
-import com.project.gyeong_do_go.game.dto.response.CatchResponse;
 import com.project.gyeong_do_go.game.dto.response.LeaveResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
+import com.project.gyeong_do_go.global.entity.RoomAndPlayer;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
 import com.project.gyeong_do_go.player.entity.Player;
 import com.project.gyeong_do_go.player.repository.PlayerRepository;
@@ -27,36 +28,35 @@ public class GameSessionService {
     private final RoomRepository roomRepository;
     private final GameBroadcaster gameBroadcaster;
     private final GameReader gameReader;
+    private final GameValidator gameValidator;
     private final GameFlowService gameFlowService;
 
     @Transactional
-    public void joinGame(Long playerId) {
-        Player player = gameReader.getPlayer(playerId);
-        Long roomId = player.getRoom().getId();
+    public void joinGame(Long roomId, Long playerId) {
         gameBroadcaster.broadcastRoomInfo(roomId);
     }
 
     @Transactional
-    public void leaveGame(Long playerId) {
-        Player player = gameReader.getPlayer(playerId);
+    public void leaveGame(Long roomId, Long playerId) {
+        RoomAndPlayer rp = gameValidator.validateAndGet(roomId, playerId);
+        Room room = rp.room(); Player player = rp.player();
 
-        Room room = player.getRoom();
-        Long roomId = room.getId();
         GameStatus roomStatus = room.getRoomStatus();
 
         log.info("플레이어 퇴장 요청: nick={}, roomStatus={}", player.getNickname(), roomStatus);
 
-        if (roomStatus == GameStatus.WAITING) {
+        if (roomStatus == GameStatus.WAITING || roomStatus == GameStatus.FINISHED) {
             if (player.isHost()) {
                 gameRepository.updateRoomStatus(roomId, "FINISHED");
                 gameBroadcaster.sendToRoom(roomId,GameMessageType.GAME_OVER,"HOST_LEFT");
                 roomRepository.delete(room); // 실제 방 삭제는 나중에 스케줄러가 해도 됨
                 return;
             }
+            room.getPlayers().remove(player);
             playerRepository.delete(player);
             gameBroadcaster.broadcastRoomInfo(roomId);
         }
-        else if (roomStatus == GameStatus.ROLE_CHECK || roomStatus == GameStatus.RUNAWAY || roomStatus == GameStatus.PLAYING) {
+        else {
             if (player.getStatus() == PlayerStatus.OUT) return;
 
             player.updateStatus(PlayerStatus.OUT);
@@ -72,29 +72,15 @@ public class GameSessionService {
     }
 
     @Transactional
-    public void handleDisconnect(Long playerId) {
-        Player player = gameReader.getPlayer(playerId);
-        Long roomId = player.getRoom().getId();
-        GameStatus status = gameRepository.getRoomStatus(roomId);
+    public void handleDisconnect(Long roomId, Long playerId) {
+        RoomAndPlayer rp = gameValidator.validateAndGet(roomId, playerId);
+        Room room = rp.room(); Player player = rp.player();
+        GameStatus status = room.getRoomStatus();
+
+        if (!playerRepository.existsById(playerId)) return;
+
         log.info("퇴장 처리 로직 실행: 방 상태={}, 플레이어={}", status, player.getNickname());
 
-        if (status == GameStatus.WAITING || status == GameStatus.ROLE_CHECK) {
-            playerRepository.delete(player);
-            gameBroadcaster.broadcastRoomInfo(roomId);
-        } else if (status == GameStatus.RUNAWAY || status == GameStatus.PLAYING) {
-            if (PlayerStatus.OUT.equals(player.getStatus())) return;
-
-            // 탈주로 간주하고 OUT 처리
-            gameRepository.updatePlayerStatus(playerId, PlayerStatus.OUT);
-
-            CatchResponse disconnectData = CatchResponse.builder()
-                    .policeNickname("SYSTEM(탈주)")
-                    .thiefNickname(player.getNickname())
-                    .thiefId(player.getId())
-                    .build();
-            gameBroadcaster.sendToRoom(roomId, GameMessageType.PLAYER_CAUGHT, disconnectData);
-
-            gameFlowService.checkGameOverCondition(roomId);
-        }
+        leaveGame(roomId, playerId);
     }
 }

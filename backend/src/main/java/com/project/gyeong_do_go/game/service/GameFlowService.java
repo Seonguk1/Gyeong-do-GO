@@ -2,9 +2,11 @@ package com.project.gyeong_do_go.game.service;
 
 import com.project.gyeong_do_go.game.component.GameBroadcaster;
 import com.project.gyeong_do_go.game.component.GameReader;
+import com.project.gyeong_do_go.game.component.GameValidator;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResultResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
+import com.project.gyeong_do_go.global.entity.RoomAndPlayer;
 import com.project.gyeong_do_go.global.error.CustomException;
 import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.player.domain.Role;
@@ -26,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.*;
 
+import static com.project.gyeong_do_go.game.domain.GameConstants.*;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -36,6 +40,7 @@ public class GameFlowService {
     private final RoomRepository roomRepository;
     private final GameBroadcaster gameBroadcaster;
     private final GameReader  gameReader;
+    private final GameValidator gameValidator;
     private final TaskScheduler taskScheduler;
 
     @Getter
@@ -51,26 +56,22 @@ public class GameFlowService {
     private GameFlowService self;
 
     @Transactional
-    public void startGame(Long playerId) {
-        Player player = gameReader.getPlayer(playerId);
-        if (!player.isHost()) {
-            throw new CustomException(ErrorCode.NOT_HOST);
-        }
-        Room room = player.getRoom();
-        Long roomId = room.getId();
+    public void startGame(Long roomId, Long playerId) {
+        RoomAndPlayer rp = gameValidator.validateAndGet(roomId, playerId);
+        Room room = rp.room(); Player player = rp.player();
 
-        if (room.getRoomStatus() != GameStatus.WAITING) {
-            throw new IllegalStateException("이미 게임이 진행 중이거나 종료된 방입니다.");
-        }
+        if (!player.isHost()) throw new CustomException(ErrorCode.NOT_HOST);
 
-        if (playerRepository.existsByRoomIdAndIsReadyFalse(roomId)) {
-            throw new IllegalStateException("모든 플레이어가 준비 상태가 되어야 합니다.");
-        }
+        if (room.getRoomStatus() != GameStatus.WAITING) throw new CustomException(ErrorCode.GAME_ALREADY_STARTED);
+
+        if (playerRepository.existsByRoomIdAndIsReadyFalse(roomId)) throw new CustomException(ErrorCode.NOT_ALL_READY);
+
+        if (playerRepository.countByRoomId(roomId) < MIN_PLAYER_COUNT) throw new CustomException(ErrorCode.NOT_ENOUGH_PLAYERS);
 
         assignPrisonerNumbers(room);
 
         gameRepository.updateRoomStatus(roomId, "STARTING");
-        Instant finishTime = Instant.now().plusSeconds(5);
+        Instant finishTime = Instant.now().plusSeconds(STARTING_TIME);
         gameBroadcaster.broadcastPhase(roomId, GameStatus.STARTING, finishTime);
         // this가 아니라 self를 통해 호출해야 트랜잭션이 걸림
         taskScheduler.schedule(() -> self.startRoleCheck(roomId), finishTime);
@@ -81,7 +82,6 @@ public class GameFlowService {
                 .filter(p -> p.getRole() == Role.THIEF)
                 .toList();
 
-        // 중복 방지를 위한 Set
         Set<String> usedNumbers = new HashSet<>();
         Random random = new Random();
 
@@ -100,7 +100,7 @@ public class GameFlowService {
     @Transactional
     public void startRoleCheck(Long roomId) {
         gameRepository.updateRoomStatus(roomId, "ROLE_CHECK");
-        Instant finishTime = Instant.now().plusSeconds(10);
+        Instant finishTime = Instant.now().plusSeconds(ROLE_CHECK_TIME);
         gameBroadcaster.broadcastPhase(roomId, GameStatus.ROLE_CHECK, finishTime);
         taskScheduler.schedule(() -> self.startRunawayPhase(roomId), finishTime);
     }
