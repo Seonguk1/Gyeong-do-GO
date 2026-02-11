@@ -9,9 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.kimmiki.gyeongdo",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.kimmiki.gyeongdo",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -39,7 +41,13 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "@mj-studio/react-native-naver-map",
+        {
+          "clientKey": "qqkho7lkyr"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -7,6 +7,7 @@ import { useState } from "react";
 import CustomInput from "@components/global/CustomInput";
 import CustomBtn from "@components/global/CustomBtn";
 import useCreateRoom from '@hooks/useCreateRoom';
+import { useLocation } from "../../src/hooks/useLocation";
 
 export default function Entry_createRoom() {
     const router = useRouter();
@@ -15,6 +16,7 @@ export default function Entry_createRoom() {
     const [playTime, setPlayTime] = useState("600");
     const [mapRadius, setMapRadius] = useState("300");
     const [prisonRadius, setPrisonRadius] = useState("30");
+    const { getCurrentCoords } = useLocation();
     return (
         <ScreenContainer
             backgroundColor="#fff"
@@ -113,12 +115,13 @@ export default function Entry_createRoom() {
                                     // 1. post request 요청 -> 성공 시 서버가 방 코드 보내줌
                                     // 2. 서버한테 받은 정보를 가지고 router.push 진행
                                     // const coords = await getCurrentCoords();
+                                    const coords = await getCurrentCoords();
                                     useCreateRoom({
                                         "nickname": nickname,
                                         "timeLimit": playTime,
                                         "runawayLimit": runawayTime,
-                                        "latitude": 123.123,
-                                        "longitude": 12.12,
+                                        "latitude": coords.latitude,
+                                        "longitude": coords.longitude,
                                         "mapRadius": mapRadius,        // 맵 반경 (m) - 기본값: 300
                                         "prisonRadius": prisonRadius
                                     }, router);

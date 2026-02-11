@@ -48,7 +48,7 @@ const roomSubscription = (playerId) => {
             else if (data.roomStatus == "ROLE_CHECK"){
               setVisible(false);
               router.push({
-              pathname: `@game/${roomData.data.roomId}/role_check`,
+              pathname: `/game/${roomData.data.roomId}/role_check`,
               params: { 
                       roomData: roomData.data, //최신 룸 정보(웹소켓으로 받은 것)
                       playerId: playerId
@@ -58,7 +58,7 @@ const roomSubscription = (playerId) => {
             else if (data.roomStatus == "RUNAWAY"){
               setVisible(true);
               router.push({
-              pathname: `@game/${roomData.data.roomId}/index`,
+              pathname: `/game/${roomData.data.roomId}/index`,
               params: {
                       playerId: playerId
               }
@@ -71,6 +71,7 @@ const roomSubscription = (playerId) => {
               
             }
           }
+
           else if (status === "ROLE_CHECK") {
             // 역할 확인 로직
           }
@@ -84,7 +85,7 @@ const roomSubscription = (playerId) => {
             // 게임 종료 로직
           }
         }
-      });
+      );
 
       // 구독 완료 후, "나 들어왔어" 메시지 전송
       client.publish({
@@ -98,7 +99,7 @@ const roomSubscription = (playerId) => {
         subscription.unsubscribe();
       };
     }
-  }, [connected, client, roomId, playerId]); // playerId 의존성 추가 (안전하게)
+  }, [connected, client, roomId, playerId,roomData]); // playerId 의존성 추가 (안전하게)
 
   // 3. 데이터 가공 (화면 렌더링용)
   const participantsByRole = useMemo(() => {
