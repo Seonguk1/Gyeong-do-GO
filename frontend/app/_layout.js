@@ -32,8 +32,8 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }} >
           <Stack.Screen name="index" />
           <Stack.Screen name="room/[roomId]/index" />
-          <Stack.Screen name="game/[roomId]/index" />
-          <Stack.Screen name="game/[roomId]/role_check" />
+          <Stack.Screen name="game/index" />
+          <Stack.Screen name="game/role_check" />
 
         </Stack>
       </SafeAreaProvider>

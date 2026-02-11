@@ -27,7 +27,7 @@ export const SocketProvider = ({ children }) => {
     console.log(`🔌 [Global Socket] 연결 시작: Room ${roomId}`);
 
     const client = new Client({
-      brokerURL: 'ws://192.168.0.195:8080/ws', // IP 확인 필수
+      brokerURL: 'ws://152.69.225.125/ws', // IP 확인 필수
       forceBinaryWSFrames: true,
       appendMissingNULLonIncoming: true,
 
@@ -37,6 +37,7 @@ export const SocketProvider = ({ children }) => {
 
         // 1. 구독 (데이터 수신)
         client.subscribe(`/topic/room/${roomId}`, (message) => {
+          console.log('📩 소켓 메시지 도착:', message.body);
           const received = JSON.parse(message.body);
           if (received.type === "UPDATE_ROOM") {
             // API 구조와 소켓 구조가 다를 수 있으므로 안전하게 처리
@@ -53,9 +54,9 @@ export const SocketProvider = ({ children }) => {
               setTimeLeft(diff > 0 ? diff : 5);
             }
             else if (status == "ROLE_CHECK") {
-              setTimeLeft(5);
-              router.replace({
-                pathname: "/game/roleCheck",
+              setTimeLeft(10);
+              router.push({
+                pathname: "/game/role_check",
                 params: {
                   roomId: roomId,
                   playerId: playerId
@@ -64,13 +65,14 @@ export const SocketProvider = ({ children }) => {
             }
             else if (status == "RUNAWAY") {
               setTimeLeft(60);
-              // router.replace({
-              //   pathname: "/game/runaway",
-              //   params: {
-              //     roomId: roomId,
-              //     playerId: playerId
-              //   }
-              // });
+              router.push({
+                pathname: "/game/",
+                params: {
+                  roomId: roomId,
+                  playerId: playerId,
+                  roomData: roomData
+                }
+              });
             }
           }
         });
@@ -100,6 +102,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   const disconnect = () => {
+
     if (clientRef.current) {
       clientRef.current.deactivate();
       setConnected(false);

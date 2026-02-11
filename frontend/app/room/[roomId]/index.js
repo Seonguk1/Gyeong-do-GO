@@ -10,6 +10,7 @@ import PlayerList from "@components/game/PlayerList";
 import CustomBtn from "@components/global/CustomBtn";
 import ready from "@api/ready";
 import start from "@api/start";
+import { useEffect } from "react";
 
 export default function WaitingRoom() {
   const router = useRouter();
@@ -18,8 +19,19 @@ export default function WaitingRoom() {
 
   const {
     roomData, police, thief,
-    isHost, isReady
+    isHost, isReady, disconnect
   } = useRoomSocket(roomId, Number(playerId));
+
+  useEffect(() => {
+    // 이 화면이 처음 켜질 때는 아무것도 안 함 (이미 useRoomSocket 내부에서 connect 할 테니까)
+    return () => {
+      // 🟢 사용자가 뒤로가기를 누르거나 다른 화면으로 이동해서 이 컴포넌트가 사라질 때 실행됨
+      console.log("🏃 방에서 나감: 구독 해제 및 소켓 연결 종료");
+      if (disconnect) {
+        disconnect();
+      }
+    };
+  }, []);
   
   const handleReady = async () => {
     console.log(isReady ? "준비 취소 요청" : "준비 완료 요청");
@@ -41,7 +53,8 @@ export default function WaitingRoom() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.canGoBack() ? router.back() : router.replace('/')}
+          onPress={() => {router.canGoBack() ? router.back() : router.replace('/')
+          }}
         >
           <Text style={styles.backText}>{"<"}</Text>
         </TouchableOpacity>
