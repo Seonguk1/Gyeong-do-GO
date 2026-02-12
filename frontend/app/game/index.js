@@ -1,11 +1,12 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, View, Text } from "react-native";
-import CustomBtn from '@components/global/CustomBtn';
-import { colors } from '@constants/colors';
 import ScreenContainer from '@components/global/ScreenContainer';
+import { colors } from '@constants/colors';
 import { typography } from '@constants/typography';
-import { NaverMapView, NaverMapMarker, NaverMapMarkerOverlay } from '@mj-studio/react-native-naver-map';import { useLocation } from '../../src/hooks/useLocation';
+import { NaverMapMarkerOverlay, NaverMapView } from '@mj-studio/react-native-naver-map';
+import * as Application from 'expo-application';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from "react-native";
+import { useLocation } from '../../src/hooks/useLocation';
 
 export default function Game_Main() {
     const router = useRouter();
@@ -15,6 +16,8 @@ export default function Game_Main() {
     const mapRef = useRef(null);
     useEffect(() => {
         (async () => {
+            const appId = Application.applicationId;
+            console.log("📍 내 앱의 진짜 ID는:", appId);
             let coords = await getCurrentCoords();
             setLocation(coords);
         })();
@@ -30,10 +33,14 @@ export default function Game_Main() {
     }
     return (
         <ScreenContainer>
-            <View>
+            <View style={{flex:1}}>
                 <NaverMapView
                     ref={mapRef}
                     style={{ width: '100%', height: '100%' }}
+                    center={{ latitude: 37.5665, longitude: 126.9780, zoom: 15 }}
+                    onInitialized={() => console.log("✅ 지도 초기화 성공!")}
+                    onAuthFailed={(e) => console.log("❌ 인증 실패 사유:", e.nativeEvent.message)}
+                    
                     // 내 위치 표시 활성화
                     isMyLocationEnabled={true}
                     // 초기 카메라 위치 (내 위치 중심)
