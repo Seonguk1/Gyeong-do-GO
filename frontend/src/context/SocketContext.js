@@ -1,8 +1,10 @@
-import { createContext, useContext, useEffect, useRef, useState, useMemo } from 'react';
 import { Client } from '@stomp/stompjs';
-import 'fast-text-encoding';
+import { getSecondsDiff } from '@utils/timeUtils';
 import { useRouter } from 'expo-router';
-import { getSecondsDiff } from '@utils/timeUtils'
+import 'fast-text-encoding';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useLocation } from "../hooks/useLocation";
+
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
@@ -12,6 +14,28 @@ export const SocketProvider = ({ children }) => {
   const [roomData, setRoomData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [prisonerNumber, setPrisonerNumber] = useState(null);
+  const roomDataRef=useRef(null);
+  const { getCurrentCoords } = useLocation();
+
+  useEffect(() => {
+  // 1. 소켓이 연결되었을 때만 타이머 가동
+  if (!connected || !clientRef.current?.connected) return;
+
+  const locationTicker = setInterval(async () => {
+      const coords = await getCurrentCoords(); 
+
+      if (coords && clientRef.current?.connected) {
+        clientRef.current.publish({
+          destination: '/app/game/location',
+          body: JSON.stringify({
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          }),
+        });
+      }
+  }, 1000);
+  return () => clearInterval(locationTicker);
+}, [connected, roomData]);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -41,6 +65,7 @@ export const SocketProvider = ({ children }) => {
           const received = JSON.parse(message.body);
           if (received.type === "UPDATE_ROOM") {
             // API 구조와 소켓 구조가 다를 수 있으므로 안전하게 처리
+            roomDataRef.current = message.body;
             const newData = received.data ? received.data : received;
             setRoomData({ ...newData });
           }
@@ -64,13 +89,13 @@ export const SocketProvider = ({ children }) => {
               });
             }
             else if (status == "RUNAWAY") {
-              setTimeLeft(60);
+              setTimeLeft(JSON.parse(roomDataRef.current).data.runawayLimit);
               router.push({
                 pathname: "/game/",
                 params: {
                   roomId: roomId,
                   playerId: playerId,
-                  roomData: roomData
+                  roomData: roomDataRef.current
                 }
               });
             }
@@ -90,9 +115,15 @@ export const SocketProvider = ({ children }) => {
           destination: '/app/game/join',
           body: JSON.stringify({ roomId, playerId }),
         });
+
+
       },
       onWebSocketClose: () => {
         console.log('⚠️ [Global Socket] 연결 끊김');
+        client.publish({
+          destination: '/app/game/leave',
+          body: JSON.stringify({}),
+        });
         setConnected(false);
       },
     });
