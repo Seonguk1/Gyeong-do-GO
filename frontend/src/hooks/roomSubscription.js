@@ -14,14 +14,16 @@ const roomSubscription = (playerId) => {
     connectToRoom, 
     leaveRoom 
   } = useSocket();
+  const roomDataRef=useRef(null);
 
   // 1. 방 입장 및 퇴장 처리
   useEffect(() => {
     if (roomId && playerId) {
       connectToRoom(roomId, playerId);
     } else {
-      console.log('roomId 또는 playerId가 없어서 실행 안 됨');
+      console.log('roomId 또는 playerId가 없어서 실행 안 됨'); //debug
     }
+
     return () => {
       leaveRoom(roomId, playerId);
     };
@@ -30,37 +32,46 @@ const roomSubscription = (playerId) => {
   // 2. 소켓 구독 및 메시지 수신 처리 (핵심 로직)
   useEffect(() => {
     console.log("구독 시작 전")
-    console.log(connected)
-    console.log(client)
-    console.log(roomId)
+    console.log(connected) //debug
+    console.log(client) //debug
+    console.log(roomId) //debug
     // 연결이 확실히 되었을 때만 구독 시작
     if (connected && client && client.connected && roomId) {
       const subscription = client.subscribe(`/topic/room/${roomId}`, (message) => {
         console.log('📩 소켓 메시지 도착:', message.body);
         const data = JSON.parse(message.body);
+        console.log("data roomStatus >>>>>>>>>>>" + data)
+        console.log("message.body로 roomStatus >>>>>>>>>>>" + message.body)
+
           if (data.type == "UPDATE_ROOM"){
-            setRoomData(data); 
+            roomDataRef.current = message.body;
+            setRoomData(data);
           }
           else if (data.type == "ROOM_STATUS_CHANGE"){
             if (data.data.roomStatus == "STARTING"){
               setVisible(true);
             }
-            else if (data.roomStatus == "ROLE_CHECK"){
+            else if (data.data.roomStatus == "ROLE_CHECK"){
               setVisible(false);
               router.push({
-              pathname: `/game/${roomData.data.roomId}/role_check`,
+              pathname: `/game/${roomId}/role_check`,
               params: { 
-                      roomData: roomData.data, //최신 룸 정보(웹소켓으로 받은 것)
+                      roomData: roomDataRef.current, //최신 룸 정보(웹소켓으로 받은 것)
                       playerId: playerId
               }
               });
             }
-            else if (data.roomStatus == "RUNAWAY"){
+            else if (data.data.roomStatus == "RUNAWAY"){
+              console.log("1,",roomDataRef.current);
+              console.log("2,",roomData);
               setVisible(true);
               router.push({
-              pathname: `/game/${roomData.data.roomId}/index`,
+              pathname: `/game/${roomId}/index`,
               params: {
-                      playerId: playerId
+                      playerId: playerId,
+                      roomId:roomId,
+                      roomData: roomDataRef.current, //최신 룸 정보(웹소켓으로 받은 것)
+
               }
               });
             }
