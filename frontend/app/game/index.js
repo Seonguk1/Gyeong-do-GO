@@ -1,27 +1,58 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, View, Text } from "react-native";
-import CustomBtn from '@components/global/CustomBtn';
-import { colors } from '@constants/colors';
 import ScreenContainer from '@components/global/ScreenContainer';
+import { colors } from '@constants/colors';
 import { typography } from '@constants/typography';
-import { NaverMapView, NaverMapMarker, NaverMapMarkerOverlay } from '@mj-studio/react-native-naver-map';import { useLocation } from '../../src/hooks/useLocation';
-import { useEffect, useRef, useState } from 'react';
+import useRoomSocket from "@hooks/useRoomSocket";
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from "react-native";
+import MapView, { Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 
 export default function Game_Main() {
     const router = useRouter();
     const { roomId, playerId, roomData } = useLocalSearchParams();
-    const [location, setLocation] = useState(null);
-    const { getCurrentCoords } = useLocation();
-    const mapRef = useRef(null);
-    useEffect(() => {
-        (async () => {
-            let coords = await getCurrentCoords();
-            setLocation(coords);
-        })();
-    }, []);
+    const { me, timeLeft, prisonerNumber } = useRoomSocket(roomId, Number(playerId));
+    const [map,setMap] = useState({centerLat:37.6358,
+                                    centerLon:127.0710,
+                                    mapRadius:null,
+                                    prisonRadius:null})
+    const [secondsLeft, setSecondsLeft] = useState(null);
+    
 
-    console.log(location);
-    if (!location) {
+    useEffect (()=>{ //roomData는 단 한번만 받으므로, 한번만 실행됨
+        const parsedData = typeof roomData === 'string' ? JSON.parse(roomData) : roomData;
+        setMap({centerLat:parseFloat(parsedData?.data?.centerLat),
+            centerLon:parseFloat(parsedData?.data?.centerLon),
+            mapRadius:parseFloat(parsedData?.data?.mapRadius),
+            prisonRadius:parseFloat(parsedData?.data?.prisonRadius)
+        })
+    },[roomData])
+
+    useEffect (()=> {//상단 타이머
+        if (roomData && timeLeft === 0){
+        const parsedData = typeof roomData === 'string' ? JSON.parse(roomData) : roomData;
+        setSecondsLeft(parsedData?.data?.timeLimit)}
+    },[roomData,timeLeft])
+    useEffect(() => {
+        if (secondsLeft <= 0) return;
+
+        const timerId = setInterval(() => {
+        setSecondsLeft((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timerId);
+    }, [secondsLeft]);
+    const formatTime = (totalSeconds) => {
+        const min = Math.floor(totalSeconds / 60);
+        const sec = totalSeconds % 60;
+        return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+    };
+
+    useEffect(()=>{
+
+    },[])
+    
+
+    if (!map.mapRadius) {
         return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Text>위치 정보를 가져오고 있습니다...</Text>
@@ -30,27 +61,64 @@ export default function Game_Main() {
     }
     return (
         <ScreenContainer>
-            <View>
-                <NaverMapView
-                    ref={mapRef}
-                    style={{ width: '100%', height: '100%' }}
-                    // 내 위치 표시 활성화
-                    isMyLocationEnabled={true}
-                    // 초기 카메라 위치 (내 위치 중심)
-                    initialCamera={{
-                        latitude: location.latitude,
-                        longitude: location.longitude,
-                        zoom: 15,
+            <View style={{ flex: 1}}>
+                <Text style={[typography.title, { color: formatTime.min < 1 ? "red" : "#fff" }]}>
+                    {formatTime(secondsLeft)}
+                </Text>
+            </View>
+            <View style={{ flex: 9}}>
+                <MapView
+                    style={{ flex: 1}}
+                    provider={PROVIDER_GOOGLE}
+                    // 지도가 처음 켜졌을 때 보여줄 중심 위치
+                    initialRegion={{
+                    latitude: map.centerLat,
+                    longitude: map.centerLon,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
                     }}
+                    // ★ 현재 내 위치를 지도에 파란색 점으로 표시
+                    showsUserLocation={true}
+                    // 내 위치를 찾는 버튼 활성화 (iOS/Android 상단에 표시됨)
+                    showsMyLocationButton={true}
+                    // 내 위치 추적 모드 (사용자의 이동에 따라 화면을 움직이고 싶다면 사용)
+                    followsUserLocation={false} 
                 >
-                    {/* 예시 마커: 내 위치에 핀 꽂기 */}
-                <NaverMapMarkerOverlay
-                    latitude={location.latitude}
-                    longitude={location.longitude}
-                    caption={{ text: "내 위치" }}
-                    onTap={() => console.log("마커 클릭됨")}
-                />
-            </NaverMapView>
+                    <View>
+                        {me.role==="THIEF" ? (
+                            <View>
+                                <Text>도둑</Text>
+                                <Text>#{prisonerNumber}</Text>
+                                <Text>{me?.nickname}</Text>
+                            </View>
+                        ) : (
+                            <View>
+                                <Text>경찰</Text>
+                                <Text>{me?.nickname}</Text>
+                            </View>
+                        )}
+                    </View>
+                    <Circle
+                        center={{
+                            latitude: map.centerLat,
+                            longitude: map.centerLon,
+                        }}
+                        radius={map.prisonRadius} 
+                        strokeColor="rgba(255, 0, 0, 0.7)"
+                        fillColor="rgba(255, 0, 0, 0.2)"
+                        strokeWidth={2}
+                    />
+                    <Circle
+                        center={{
+                            latitude: map.centerLat,
+                            longitude: map.centerLon,
+                        }}
+                        radius={map.mapRadius} 
+                        strokeColor="rgba(0, 150, 255, 0.7)"
+                        fillColor="rgba(0, 150, 255, 0.2)"
+                        strokeWidth={2}
+                    />
+                </MapView>
             </View>
         </ScreenContainer>
     );

@@ -10,7 +10,16 @@
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.kimmiki.gyeongdo",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyDsyWLpiyTgL5ha4svzGvn24oFDBU1ZiAo"
+      },
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "NSLocalNetworkUsageDescription": "서버와 통신하기 위해 로컬 네트워크 권한이 필요합니다."
+      }
     },
     "android": {
       "package": "com.kimmiki.gyeongdo",
@@ -19,6 +28,11 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDsyWLpiyTgL5ha4svzGvn24oFDBU1ZiAo"
+        }
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -41,13 +55,7 @@
           }
         }
       ],
-      "expo-font",
-      [
-        "@mj-studio/react-native-naver-map",
-        {
-          "clientKey": "qqkho7lkyr"
-        }
-      ]
+      
     ],
     "experiments": {
       "typedRoutes": true,
