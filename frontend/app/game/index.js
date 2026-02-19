@@ -1,3 +1,4 @@
+import CustomInput from "@components/global/CustomInput";
 import ScreenContainer from '@components/global/ScreenContainer';
 import { colors } from '@constants/colors';
 import { typography } from '@constants/typography';
@@ -6,31 +7,38 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from "react-native";
 import MapView, { Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import CustomBtn from '../../src/components/global/CustomBtn';
+import CustomModal from '../../src/components/global/CustomModal';
+
 
 export default function Game_Main() {
     const router = useRouter();
-    const { roomId, playerId, roomData } = useLocalSearchParams();
-    const { me, timeLeft, prisonerNumber } = useRoomSocket(roomId, Number(playerId));
+    const {roomId, playerId} = useLocalSearchParams();
+    const { me, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, roomData} = useRoomSocket(roomId, Number(playerId));
     const [map,setMap] = useState({centerLat:37.6358,
                                     centerLon:127.0710,
                                     mapRadius:null,
                                     prisonRadius:null})
     const [secondsLeft, setSecondsLeft] = useState(null);
+    const [catchVisible, setCatchVisible] = useState(false);
+    const [catchNumber, setCatchNumber] = useState(1);
     
 
     useEffect (()=>{ //roomData는 단 한번만 받으므로, 한번만 실행됨
-        const parsedData = typeof roomData === 'string' ? JSON.parse(roomData) : roomData;
-        setMap({centerLat:parseFloat(parsedData?.data?.centerLat),
-            centerLon:parseFloat(parsedData?.data?.centerLon),
-            mapRadius:parseFloat(parsedData?.data?.mapRadius),
-            prisonRadius:parseFloat(parsedData?.data?.prisonRadius)
+        //const parsedData = roomData;
+        console.log("📍 진짜 데이터 내용:", roomData);
+        if (!roomData) return;
+        setMap({centerLat:roomData?.centerLat,
+            centerLon:roomData?.centerLon,
+            mapRadius:roomData?.mapRadius,
+            prisonRadius:roomData?.prisonRadius
         })
     },[roomData])
 
     useEffect (()=> {//상단 타이머
         if (roomData && timeLeft === 0){
-        const parsedData = typeof roomData === 'string' ? JSON.parse(roomData) : roomData;
-        setSecondsLeft(parsedData?.data?.timeLimit)}
+        const parsedData = roomData;
+        setSecondsLeft(parsedData?.timeLimit)}
     },[roomData,timeLeft])
     useEffect(() => {
         if (secondsLeft <= 0) return;
@@ -98,6 +106,19 @@ export default function Game_Main() {
                             </View>
                         )}
                     </View>
+                    <View>
+                        {me.role==="THIEF" ? (
+                            <View>
+                            </View>
+                        ) : (
+                            <View style={[styles.section, styles.buttonSection]}>
+                                <CustomBtn
+                                    title="검거하기"
+                                    onPress={() => {setCatchVisible(true)}}
+                                />
+                            </View>
+                        )}
+                    </View>
                     <Circle
                         center={{
                             latitude: map.centerLat,
@@ -119,6 +140,37 @@ export default function Game_Main() {
                         strokeWidth={2}
                     />
                 </MapView>
+                <CustomModal
+                    visible={catchVisible}
+                >
+                    <Text style={styles.subText}>도둑 개인 식별 번호 입력</Text>
+                    <CustomInput
+                        value={catchNumber}
+                        onChangeText={setCatchNumber}
+                        placeholder="# 0000"
+                        style={{ marginBottom: 5 }}
+                    />
+                    <CustomBtn
+                            title={"검거하기"}
+                            onPress={() => {
+                                catchTheif(catchNumber);
+                                setCatchVisible(false);
+                            }}
+                    />
+                    <CustomBtn
+                            title={"닫기"}
+                            onPress={() => {
+                                setCatchVisible(false);
+                            }}
+                    />
+
+                </CustomModal>
+                <CustomModal
+                    visible={isOutOfBounds}
+                >
+                    <Text style={styles.subText}>맵 범위를 벗어났습니다.</Text>
+                    <Text style={styles.subText}>10초 이내로 복귀하지 않을 시 탈주로 간주됩니다.</Text>
+                </CustomModal>
             </View>
         </ScreenContainer>
     );

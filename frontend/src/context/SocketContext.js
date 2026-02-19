@@ -2,6 +2,7 @@ import { Client } from '@stomp/stompjs';
 import { getSecondsDiff } from '@utils/timeUtils';
 import { useRouter } from 'expo-router';
 import 'fast-text-encoding';
+import { getDistance } from 'geolib';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation } from "../hooks/useLocation";
 
@@ -16,14 +17,75 @@ export const SocketProvider = ({ children }) => {
   const [prisonerNumber, setPrisonerNumber] = useState(null);
   const roomDataRef=useRef(null);
   const { getCurrentCoords } = useLocation();
+  const outOfBoundsTimerRef = useRef(null);
+  const [isOutOfBounds, setIsOutOfBounds] = useState(false);
+  const [myLocation, setMyLocation] = useState(null);
+
+  const catchTheif = (number) => {//도둑 잡음 메세지
+    clientRef.current.publish({
+      destination: '/app/game/catch', 
+      body: JSON.stringify({
+        "targetNumber": number
+      })
+    });
+  }
 
   useEffect(() => {
-  // 1. 소켓이 연결되었을 때만 타이머 가동
+    if (!connected || !roomDataRef.current || !myLocation) return;
+    
+    const rawData = typeof roomDataRef.current === 'string' 
+      ? JSON.parse(roomDataRef.current) 
+      : roomDataRef.current;
+
+    const centerLat = rawData.data?.centerLat;
+    const centerLon = rawData.data?.centerLon;
+    const mapRadius = rawData.data?.mapRadius || 300;
+
+    if (!centerLat || !centerLon) return;
+
+    const distance = getDistance(
+      { latitude: myLocation.latitude, longitude: myLocation.longitude },
+      { latitude: centerLat, longitude: centerLon }
+    );
+
+    if (distance > mapRadius) {
+      if (!outOfBoundsTimerRef.current) {
+        setIsOutOfBounds(true);
+
+        outOfBoundsTimerRef.current = setTimeout(() => {
+          handleForceExit();
+        }, 10000);
+      }
+    } 
+    else {
+      if (outOfBoundsTimerRef.current) {
+        clearTimeout(outOfBoundsTimerRef.current);
+        outOfBoundsTimerRef.current = null;
+        setIsOutOfBounds(false);
+      }
+    }
+    return () => {
+      if (outOfBoundsTimerRef.current) clearTimeout(outOfBoundsTimerRef.current);
+    };
+  }, [myLocation]);
+
+  const handleForceExit = () => {
+    clientRef.current?.publish({
+      destination: '/app/game/leave',
+      body: JSON.stringify(),
+    });
+    disconnect();
+    router.replace("/entry/main");
+    alert("구역을 너무 멀리 벗어나 게임에서 제외되었습니다.");
+  };
+
+
+  useEffect(() => {//1초마다 위치 전송
   if (!connected || !clientRef.current?.connected) return;
 
   const locationTicker = setInterval(async () => {
       const coords = await getCurrentCoords(); 
-
+      setMyLocation(coords);
       if (coords && clientRef.current?.connected) {
         clientRef.current.publish({
           destination: '/app/game/location',
@@ -37,6 +99,7 @@ export const SocketProvider = ({ children }) => {
   return () => clearInterval(locationTicker);
 }, [connected, roomData]);
 
+
   useEffect(() => {
     if (timeLeft <= 0) return;
     const timerId = setInterval(() => {
@@ -44,6 +107,7 @@ export const SocketProvider = ({ children }) => {
     }, 1000);
     return () => clearInterval(timerId);
   }, [timeLeft]);
+
 
   const connect = (roomId, playerId) => {
     if (clientRef.current?.active) return;
@@ -65,8 +129,8 @@ export const SocketProvider = ({ children }) => {
           const received = JSON.parse(message.body);
           if (received.type === "UPDATE_ROOM") {
             // API 구조와 소켓 구조가 다를 수 있으므로 안전하게 처리
-            roomDataRef.current = message.body;
             const newData = received.data ? received.data : received;
+            roomDataRef.current = newData ;
             setRoomData({ ...newData });
           }
           else if (received.type === "ROOM_STATUS_CHANGE") {
@@ -89,13 +153,12 @@ export const SocketProvider = ({ children }) => {
               });
             }
             else if (status == "RUNAWAY") {
-              setTimeLeft(JSON.parse(roomDataRef.current).data.runawayLimit);
+              setTimeLeft(roomDataRef.current.runawayLimit);
               router.push({
                 pathname: "/game/",
                 params: {
                   roomId: roomId,
-                  playerId: playerId,
-                  roomData: roomDataRef.current
+                  playerId: playerId
                 }
               });
             }
@@ -143,7 +206,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber }}>
+    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds}}>
       {children}
     </SocketContext.Provider>
   );
