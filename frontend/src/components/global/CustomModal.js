@@ -1,6 +1,6 @@
-import { Button, View } from "react-native";
+import { View } from "react-native";
 
-function CustomModal({ visible, setVisible, children }) {
+function CustomModal({ visible, children }) {
   
   // return 밖에서 조건부 처리를 하거나, return 안에서 { }를 제대로 써야 합니다.
   if (!visible) return null; 
@@ -23,7 +23,6 @@ function CustomModal({ visible, setVisible, children }) {
       }}>
         {/* children은 부모가 <CustomModal>여기에 쓴 내용</CustomModal>을 가져옵니다 */}
         {children}
-        <Button title="닫기" onPress={() => setVisible(false)} />
       </View>
     </View>
   );
