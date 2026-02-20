@@ -71,7 +71,7 @@ public class RoomController {
             @PathVariable Long roomId,
             @RequestBody @Valid GameStartRequest request
     ) {
-        flowService.startGame(request.playerId());
+        flowService.startGame(roomId, request.playerId());
         Room room = roomService.getRoomDetail(roomId);
 
         return ApiResponse.success(new GameStartResponse(

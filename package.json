@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@stomp/stompjs": "^7.3.0",
-    "text-encoding": "^0.7.0"
-  }
-}

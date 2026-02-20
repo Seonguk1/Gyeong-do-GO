@@ -1,6 +1,8 @@
 package com.project.gyeong_do_go.room.service;
 
 import com.project.gyeong_do_go.game.component.GameBroadcaster;
+import com.project.gyeong_do_go.game.component.GameValidator;
+import com.project.gyeong_do_go.global.entity.RoomAndPlayer;
 import com.project.gyeong_do_go.global.error.CustomException;
 import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.player.domain.PlayerStatus;
@@ -29,6 +31,7 @@ public class RoomService {
     private final PlayerRepository playerRepository;
     private final PlayerRedisRepository playerRedisRepository;
     private final GameBroadcaster gameBroadcaster;
+    private final GameValidator gameValidator;
 
     private static final String CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final SecureRandom random = new SecureRandom();
@@ -71,7 +74,11 @@ public class RoomService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
 
         if (room.getRoomStatus() != GameStatus.WAITING) {
-            throw new CustomException(ErrorCode.GAME_ALREADY_STARTED);
+            throw new CustomException(ErrorCode.ROOM_NOT_JOINABLE);
+        }
+
+        if (playerRepository.existsByRoomAndNickname(room, nickname)) {
+            throw new CustomException(ErrorCode.NICKNAME_DUPLICATED);
         }
 
         Player player = Player.builder()
@@ -85,15 +92,15 @@ public class RoomService {
 
     @Transactional
     public void updateRoomSettings(Long roomId, RoomSettingRequest req) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+        RoomAndPlayer roomAndPlayer = gameValidator.validateAndGet(roomId, req.playerId());
+        Room room = roomAndPlayer.room(); Player player = roomAndPlayer.player();
+
+        if (!player.isHost()) throw new CustomException(ErrorCode.NOT_HOST);
+
+        if (room.getRoomStatus() != GameStatus.WAITING) throw new CustomException(ErrorCode.GAME_ALREADY_STARTED);
 
         // 방장 권한 체크 (필수)
         // (실무에선 SecurityContext에서 꺼내온 ID와 room.getHostId() 비교)
-
-        if (room.getRoomStatus() != GameStatus.WAITING) {
-            throw new IllegalStateException("게임 대기 중에만 설정을 변경할 수 있습니다.");
-        }
 
         room.updateSettings(
                 req.centerLat(), req.centerLng(),

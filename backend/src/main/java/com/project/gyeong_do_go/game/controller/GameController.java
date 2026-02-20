@@ -1,12 +1,10 @@
 package com.project.gyeong_do_go.game.controller;
 
 import com.project.gyeong_do_go.game.dto.request.CatchRequest;
-import com.project.gyeong_do_go.game.dto.request.JoinGameRequest;
 import com.project.gyeong_do_go.game.dto.request.LocationRequest;
 import com.project.gyeong_do_go.game.service.GameActionService;
 import com.project.gyeong_do_go.game.service.GameFlowService;
 import com.project.gyeong_do_go.game.service.GameSessionService;
-import com.project.gyeong_do_go.global.socket.WebSocketSessionManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -22,55 +20,45 @@ public class GameController {
     private final GameFlowService flowService;
     private final GameActionService actionService;
     private final SimpMessagingTemplate template;
-    private final WebSocketSessionManager sessionManager;
 
     @MessageMapping("/game/join")
-    public void joinGame(@Payload JoinGameRequest request, SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        sessionManager.registerSession(sessionId, request.getPlayerId());
-        sessionService.joinGame(request.getPlayerId());
+    public void joinGame(SimpMessageHeaderAccessor accessor) {
+        Long roomId = (Long) accessor.getSessionAttributes().get("roomId");
+        Long playerId = (Long) accessor.getSessionAttributes().get("playerId");
+        // 만약 세션에 값이 없다면? (인터셉터에서 걸러지겠지만, 방어 로직)
+//        if (roomId == null || playerId == null) throw new CustomException(ErrorCode.UNAUTHORIZED);
+        sessionService.joinGame(roomId, playerId);
     }
 
     @MessageMapping("/game/leave")
-    public void leaveGame(SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Long playerId = sessionManager.getPlayerId(sessionId);
+    public void leaveGame(SimpMessageHeaderAccessor accessor) {
+        Long roomId = (Long) accessor.getSessionAttributes().get("roomId");
+        Long playerId = (Long) accessor.getSessionAttributes().get("playerId");
         if (playerId == null) return;
-        sessionService.leaveGame(playerId);
-        sessionManager.removeSession(sessionId);
+        sessionService.leaveGame(roomId, playerId);
     }
 
     @MessageMapping("/game/location")
-    public void sendLocation(@Payload LocationRequest request, SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Long playerId = sessionManager.getPlayerId(sessionId);
-        actionService.updateLocation(playerId, request.getLatitude(), request.getLongitude());
+    public void sendLocation(@Payload LocationRequest request, SimpMessageHeaderAccessor accessor) {
+        Long roomId = (Long) accessor.getSessionAttributes().get("roomId");
+        Long playerId = (Long) accessor.getSessionAttributes().get("playerId");
+        actionService.updateLocation(roomId, playerId, request.getLatitude(), request.getLongitude());
     }
 
     @MessageMapping("/game/catch")
-    public void catchThief(@Payload CatchRequest request, SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Long policeId = sessionManager.getPlayerId(sessionId);
-        actionService.catchThief(policeId, request.getTargetNumber());
+    public void catchThief(@Payload CatchRequest request, SimpMessageHeaderAccessor accessor) {
+        Long roomId = (Long) accessor.getSessionAttributes().get("roomId");
+        Long policeId = (Long) accessor.getSessionAttributes().get("playerId");
+        actionService.catchThief(roomId, policeId, request.getTargetNumber());
     }
 
     @MessageMapping("/game/rescue")
-    public void rescuePrisoners(SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Long playerId = sessionManager.getPlayerId(sessionId);
-        actionService.rescuePrisoners(playerId);
+    public void rescuePrisoners(SimpMessageHeaderAccessor accessor) {
+        Long roomId = (Long) accessor.getSessionAttributes().get("roomId");
+        Long playerId = (Long) accessor.getSessionAttributes().get("playerId");
+        actionService.rescuePrisoners(roomId, playerId);
     }
 
-    public record RegisterRequest(Long playerId) {}
-    @MessageMapping("/game/register")
-    public void registerPlayer(@Payload RegisterRequest request, SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Long playerId = request.playerId();
-        // 세션 매니저에 현재 세션과 플레이어 ID를 강제로 연결
-        sessionManager.registerSession(sessionId, playerId);
-
-        System.out.println("🚀 [테스트 전용] 세션 등록 완료: " + sessionId + " => " + playerId);
-    }
 //    @MessageExceptionHandler(MethodArgumentNotValidException.class)
 //    @SendToUser("/queue/errors")
 //    public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {
