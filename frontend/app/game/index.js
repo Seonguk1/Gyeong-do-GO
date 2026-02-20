@@ -4,17 +4,18 @@ import { colors } from '@constants/colors';
 import { typography } from '@constants/typography';
 import useRoomSocket from "@hooks/useRoomSocket";
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from "react-native";
-// import MapView, { Circle, PROVIDER_GOOGLE } from 'react-native-maps';
-import CustomBtn from '@components/global/CustomBtn';
-import CustomModal from '@components/global/CustomModal';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import MapView, { Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import CustomBtn from '../../src/components/global/CustomBtn';
+import CustomModal from '../../src/components/global/CustomModal';
+
 
 export default function Game_Main() {
     if (Platform.OS === "web") return null;
     const router = useRouter();
     const {roomId, playerId} = useLocalSearchParams();
-    const { me, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, roomData} = useRoomSocket(roomId, Number(playerId));
+    const { me, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, roomData} = useRoomSocket(roomId, Number(playerId));
     const [map,setMap] = useState({centerLat:37.6358,
                                     centerLon:127.0710,
                                     mapRadius:null,
@@ -22,7 +23,24 @@ export default function Game_Main() {
     const [secondsLeft, setSecondsLeft] = useState(null);
     const [catchVisible, setCatchVisible] = useState(false);
     const [catchNumber, setCatchNumber] = useState(1);
-    
+    const [isPressing, setIsPressing] = useState(false);
+    const interactionTimerRef = useRef(null);
+
+
+    const handlePressIn = () => {//탈옥 버튼
+        setIsPressing(true); // 시각적 효과 시작
+        interactionTimerRef.current = setTimeout(() => {
+            rescueSuccess();
+            setIsPressing(false); 
+        }, 3000);
+    };
+    const handlePressOut = () => {
+        setIsPressing(false); // 시각적 효과 해제
+        if (interactionTimerRef.current) {
+            clearTimeout(interactionTimerRef.current);
+            interactionTimerRef.current = null;
+        }
+    };
 
     useEffect (()=>{ //roomData는 단 한번만 받으므로, 한번만 실행됨
         //const parsedData = roomData;
@@ -107,10 +125,7 @@ export default function Game_Main() {
                         )}
                     </View>
                     <View>
-                        {me.role==="THIEF" ? (
-                            <View>
-                            </View>
-                        ) : (
+                        {me.role==="POLICE" && (
                             <View style={[styles.section, styles.buttonSection]}>
                                 <CustomBtn
                                     title="검거하기"
@@ -171,6 +186,17 @@ export default function Game_Main() {
                     <Text style={styles.subText}>맵 범위를 벗어났습니다.</Text>
                     <Text style={styles.subText}>10초 이내로 복귀하지 않을 시 탈주로 간주됩니다.</Text>
                 </CustomModal>
+                {me?.role === "THIEF" && secondsLeft !== null && (
+                    <CustomModal
+                        visible={rescue}
+                    >
+                        <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut}>
+                            <View style={{ backgroundColor: isPressing ? 'red' : 'black' }}>
+                                <Text>{isPressing ? "해제 중... (떼지 마세요!)" : "꾹 눌러서 해제"}</Text>
+                            </View>
+                        </Pressable>
+                    </CustomModal>
+                )}
             </View>
         </ScreenContainer>
     );
