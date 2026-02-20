@@ -5,13 +5,13 @@ import { typography } from '@constants/typography';
 import useRoomSocket from "@hooks/useRoomSocket";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from "react-native";
-import MapView, { Circle, PROVIDER_GOOGLE } from 'react-native-maps';
-import CustomBtn from '../../src/components/global/CustomBtn';
-import CustomModal from '../../src/components/global/CustomModal';
-
+import { Platform, StyleSheet, Text, View } from "react-native";
+// import MapView, { Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import CustomBtn from '@components/global/CustomBtn';
+import CustomModal from '@components/global/CustomModal';
 
 export default function Game_Main() {
+    if (Platform.OS === "web") return null;
     const router = useRouter();
     const {roomId, playerId} = useLocalSearchParams();
     const { me, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, roomData} = useRoomSocket(roomId, Number(playerId));
