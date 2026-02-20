@@ -13,7 +13,15 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "players")
+@Table(
+        name = "players",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_room_nickname", // 제약 조건 이름
+                        columnNames = {"room_id", "nickname"} // 방 ID와 닉네임 조합은 유일해야 함
+                )
+        }
+)
 public class Player extends BaseTimeEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

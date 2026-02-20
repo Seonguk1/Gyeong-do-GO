@@ -12,6 +12,7 @@ import CustomModal from '../../src/components/global/CustomModal';
 
 
 export default function Game_Main() {
+    if (Platform.OS === "web") return null;
     const router = useRouter();
     const {roomId, playerId} = useLocalSearchParams();
     const { me, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, roomData} = useRoomSocket(roomId, Number(playerId));

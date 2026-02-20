@@ -2,10 +2,12 @@ package com.project.gyeong_do_go.game.service;
 
 import com.project.gyeong_do_go.game.component.GameBroadcaster;
 import com.project.gyeong_do_go.game.component.GameReader;
+import com.project.gyeong_do_go.game.component.GameValidator;
 import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.CatchResponse;
 import com.project.gyeong_do_go.game.dto.response.RescueResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
+import com.project.gyeong_do_go.global.entity.RoomAndPlayer;
 import com.project.gyeong_do_go.global.error.CustomException;
 import com.project.gyeong_do_go.global.error.ErrorCode;
 import com.project.gyeong_do_go.global.util.GeometryUtil;
@@ -34,10 +36,11 @@ public class GameActionService {
     private final GameFlowService gameFlowService;
     private final GameBroadcaster gameBroadcaster;
     private final GameReader  gameReader;
+    private final GameValidator gameValidator;
     private static final double CATCH_DISTANCE_LIMIT = 5.0;
 
     @Transactional
-    public void updateLocation(Long playerId, double latitude, double longitude) {
+    public void updateLocation(Long roomId, Long playerId, double latitude, double longitude) {
         PlayerRedis playerRedis = playerRedisRepository.findById(playerId)
                 .orElse(PlayerRedis.builder()
                         .playerId(playerId)
@@ -55,28 +58,25 @@ public class GameActionService {
     }
 
     @Transactional
-    public void catchThief(Long policeId, String targetNumber) {
-        Player police = gameRepository.getPlayer(policeId);
-        Room room = police.getRoom();
-        Player thief = playerRepository.findByRoomIdAndPrisonerNumber(room.getId(), targetNumber)
+    public void catchThief(Long roomId, Long policeId, String targetNumber) {
+        RoomAndPlayer rp = gameValidator.validateAndGet(roomId, policeId);
+        Room room = rp.room(); Player police = rp.player();
+
+        Player thief = playerRepository.findByRoomIdAndPrisonerNumber(roomId, targetNumber)
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAYER_NOT_FOUND));
 
         validateCatchRequest(police, thief);
 
         // 거리 검증
         double distance = GeometryUtil.calculateDistance(police.getLatitude(), police.getLongitude(), thief.getLatitude(), thief.getLongitude());
-        if (distance > CATCH_DISTANCE_LIMIT) {
-            throw new IllegalArgumentException("거리가 너무 멀어 검거할 수 없습니다. 거리: " + (int)distance + "m");
-        }
+        if (distance > CATCH_DISTANCE_LIMIT) throw new CustomException(ErrorCode.DISTANCE_TOO_FAR);
 
         police.increaseCatchCount();
         thief.markAsCaught();
 
-        Long roomId = police.getRoom().getId();
-
         CatchResponse response = CatchResponse.builder()
                 .policeNickname(police.getNickname())
-                .policeId(police.getId())
+                .policeId(policeId)
                 .thiefNickname(thief.getNickname())
                 .thiefId(thief.getId())
                 .build();
@@ -103,7 +103,7 @@ public class GameActionService {
     }
 
     @Transactional
-    public void rescuePrisoners(Long rescuerId) {
+    public void rescuePrisoners(Long roomId, Long rescuerId) {
         Player rescuer = gameReader.getPlayer(rescuerId);
         Room room = rescuer.getRoom();
 
