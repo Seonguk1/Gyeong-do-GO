@@ -1,5 +1,4 @@
 import { Client } from '@stomp/stompjs';
-import { getSecondsDiff } from '@utils/timeUtils';
 import { useRouter } from 'expo-router';
 import 'fast-text-encoding';
 import { getDistance } from 'geolib';
@@ -14,6 +13,7 @@ export const SocketProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
   const [roomData, setRoomData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [startVisible, setStartVisible] = useState(false);
   const [prisonerNumber, setPrisonerNumber] = useState(null);
   const roomDataRef=useRef(null);
   const { getCurrentCoords } = useLocation();
@@ -157,11 +157,13 @@ export const SocketProvider = ({ children }) => {
             const status = received.data?.roomStatus || received.roomStatus;
             console.log("방 상태 변경:", status);
             if (status == "STARTING") {
-              const serverTime = received.data?.startTime;
-              const diff = getSecondsDiff(serverTime);
-              setTimeLeft(diff > 0 ? diff : 5);
+              //const serverTime = received.data?.startTime;
+              //const diff = getSecondsDiff(serverTime);
+              setTimeLeft(5);
+              setStartVisible(true);
             }
             else if (status == "ROLE_CHECK") {
+              setStartVisible(false);
               setTimeLeft(10);
               router.push({
                 pathname: "/game/role_check",
@@ -225,7 +227,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess}}>
+    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, startVisible}}>
       {children}
     </SocketContext.Provider>
   );
