@@ -73,7 +73,7 @@ export default function WaitingRoom() {
             <RoleChangeBtn
               roomId={roomId}
               playerId={playerId}
-              title="경찰1"
+              title="경찰"
               role="POLICE"
             />
             <RoleChangeBtn

@@ -1,5 +1,6 @@
 package com.project.gyeong_do_go.room.repository;
 
+import com.project.gyeong_do_go.room.domain.GameStatus;
 import com.project.gyeong_do_go.room.entity.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     void deleteByCreatedAtBefore(LocalDateTime dateTime);
     List<Room> findAllByCreatedAtBefore(LocalDateTime dateTime);
+
+    @Query("SELECT r FROM Room r WHERE r.roomStatus = :status")
+    List<Room> findByRoomStatus(@Param("status") GameStatus status);
 }

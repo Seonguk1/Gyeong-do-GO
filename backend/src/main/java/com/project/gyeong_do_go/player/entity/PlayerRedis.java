@@ -12,7 +12,7 @@ import org.springframework.data.redis.core.RedisHash;
 public class PlayerRedis {
     @Id
     private Long playerId; // key 역할을 함
-
+    private Long roomId;
     private double latitude;
     private double longitude; 
 
