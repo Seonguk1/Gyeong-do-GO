@@ -21,6 +21,7 @@ export const SocketProvider = ({ children }) => {
   const [isOutOfBounds, setIsOutOfBounds] = useState(false);
   const [rescue, setRescue] = useState(false);
   const [myLocation, setMyLocation] = useState(null);
+  const [other, setOther] = useState(null);
 
   const catchTheif = (number) => {//도둑 잡음 메세지
     clientRef.current.publish({
@@ -72,15 +73,18 @@ export const SocketProvider = ({ children }) => {
         setRescue(false);
       }
     }
-    return () => {
-      if (outOfBoundsTimerRef.current) clearTimeout(outOfBoundsTimerRef.current);
-    };
   }, [myLocation]);
+
+  useEffect(() => {
+  return () => {
+    if (outOfBoundsTimerRef.current) clearTimeout(outOfBoundsTimerRef.current);
+  };
+}, []);
 
   const handleForceExit = () => {
     clientRef.current?.publish({
       destination: '/app/game/leave',
-      body: JSON.stringify(),
+      body: JSON.stringify({}),
     });
     disconnect();
     router.replace("/entry/main");
@@ -88,9 +92,9 @@ export const SocketProvider = ({ children }) => {
   };
 
   const rescueSuccess = () => {
-    clientRef.current?.publish({
+    clientRef.current.publish({
           destination: '/app/game/rescue',
-          body: JSON.stringify(),
+          body: JSON.stringify({}),
         });
     alert("구출 완료!");
     if (rescue) {
@@ -196,6 +200,16 @@ export const SocketProvider = ({ children }) => {
               });
             }
           }
+          else if (received.type === "UPDATE_LOCATION") {
+              if(received.data.playerId != playerId){
+                setOther(received.data);
+              }
+              
+            }
+          
+          else if (received.type === "GAME_OVER") {
+          //{"type":"GAME_OVER","data":{"mvpPlayer":"참가자B","mvpReason":"총 1명 검거","winnerTeam":"POLICE"}}
+          }
         });
 
         client.subscribe(`/queue/player/${playerId}`, (message) => {
@@ -216,10 +230,6 @@ export const SocketProvider = ({ children }) => {
       },
       onWebSocketClose: () => {
         console.log('⚠️ [Global Socket] 연결 끊김');
-        client.publish({
-          destination: '/app/game/leave',
-          body: JSON.stringify({}),
-        });
         setConnected(false);
       },
     });
@@ -231,6 +241,10 @@ export const SocketProvider = ({ children }) => {
   const disconnect = () => {
 
     if (clientRef.current) {
+      clientRef.current.publish({
+          destination: '/app/game/leave',
+          body: JSON.stringify({}),
+        });
       clientRef.current.deactivate();
       setConnected(false);
       setRoomData(null);
@@ -239,7 +253,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, startVisible}}>
+    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, startVisible, other}}>
       {children}
     </SocketContext.Provider>
   );

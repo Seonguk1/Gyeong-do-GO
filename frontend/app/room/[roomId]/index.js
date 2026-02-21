@@ -1,17 +1,16 @@
-import ready from "@api/ready";
-import start from "@api/start";
-import PlayerList from "@components/game/PlayerList";
-import RoleChangeBtn from "@components/game/RoleChangeBtn";
-import CustomBtn from "@components/global/CustomBtn";
 import ScreenContainer from "@components/global/ScreenContainer";
 import { colors } from "@constants/colors";
 import { typography } from "@constants/typography";
 import useRoomSocket from "@hooks/useRoomSocket";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import 'fast-text-encoding';
+import RoleChangeBtn from "@components/entry/waiting/RoleChangeBtn";
+import PlayerList from "@components/entry/waiting/PlayerList";
+import CustomBtn from "@components/global/CustomBtn";
+import ready from "@api/ready";
+import start from "@api/start";
 import { useEffect } from "react";
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 
 export default function WaitingRoom() {

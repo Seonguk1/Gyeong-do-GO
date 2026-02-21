@@ -5,16 +5,24 @@ import { typography } from '@constants/typography';
 import useRoomSocket from "@hooks/useRoomSocket";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
+<<<<<<< HEAD
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import CustomBtn from '@components/global/CustomBtn';
 import CustomModal from '@components/global/CustomModal';
+=======
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import MapView, { Marker,Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import CustomBtn from '../../src/components/global/CustomBtn';
+import CustomModal from '../../src/components/global/CustomModal';
+>>>>>>> 5695420e (wwwww)
 
 
 export default function Game_Main() {
+    if (Platform.OS === "web") return null;
     const router = useRouter();
     const {roomId, playerId} = useLocalSearchParams();
-    const { me, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, roomData} = useRoomSocket(roomId, Number(playerId));
+    const { me, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, roomData, other} = useRoomSocket(roomId, Number(playerId));
     const [map,setMap] = useState({centerLat:37.6358,
                                     centerLon:127.0710,
                                     mapRadius:null,
@@ -109,6 +117,24 @@ export default function Game_Main() {
                     followsUserLocation={false} 
                 >
                     <View>
+                        {other && (
+                            <Marker
+                            coordinate={{
+                                latitude: other.latitude,
+                                longitude: other.longitude
+                            }}
+                            // 마커 모양을 아주 단순한 원형으로 지정
+                            >
+                            <View style={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 8,
+                                backgroundColor:'#FF3B30',
+                                borderWidth: 2,
+                                borderColor: 'white',
+                            }} />
+                            </Marker>
+                        )}
                         {me.role==="THIEF" ? (
                             <View>
                                 <Text>도둑</Text>
@@ -123,7 +149,7 @@ export default function Game_Main() {
                         )}
                     </View>
                     <View>
-                        {me.role==="POLICE" && (
+                        {me.role==="POLICE" && secondsLeft !== null && (
                             <View style={[styles.section, styles.buttonSection]}>
                                 <CustomBtn
                                     title="검거하기"
