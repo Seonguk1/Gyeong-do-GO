@@ -143,6 +143,10 @@ export const SocketProvider = ({ children }) => {
 
     const client = new Client({
       brokerURL: WS_URL,
+      connectHeaders: {
+        roomId: String(roomId),
+        playerId: String(playerId),
+    },
       forceBinaryWSFrames: true,
       appendMissingNULLonIncoming: true,
 

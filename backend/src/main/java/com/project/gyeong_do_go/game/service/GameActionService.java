@@ -41,9 +41,14 @@ public class GameActionService {
 
     @Transactional
     public void updateLocation(Long roomId, Long playerId, double latitude, double longitude) {
+        if (playerId == null || roomId == null) {
+            throw new IllegalArgumentException("playerId와 roomId는 null일 수 없습니다");
+        }
+        
         PlayerRedis playerRedis = playerRedisRepository.findById(playerId)
                 .orElse(PlayerRedis.builder()
                         .playerId(playerId)
+                        .roomId(roomId)
                         .latitude(latitude)
                         .longitude(longitude)
                         .totalDistance(0.0)
@@ -51,10 +56,6 @@ public class GameActionService {
 
         playerRedis.updatePosition(latitude, longitude);
         playerRedisRepository.save(playerRedis);
-
-        gameBroadcaster.broadcastLocation(playerId, latitude, longitude);
-
-        // 검거 로직
     }
 
     @Transactional
