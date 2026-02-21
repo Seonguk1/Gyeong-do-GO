@@ -89,6 +89,11 @@ public class GameRepository{
         return playerRepository.findPrisonersByRoomId(roomId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Room> getPlayingRooms() {
+        return roomRepository.findByRoomStatus(GameStatus.PLAYING);
+    }
+
     // ==========================================
     //  변경 로직 (Write) - @Transactional 필수
     // ==========================================

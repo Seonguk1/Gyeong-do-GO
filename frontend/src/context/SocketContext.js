@@ -133,8 +133,20 @@ export const SocketProvider = ({ children }) => {
 
     console.log(`🔌 [Global Socket] 연결 시작: Room ${roomId}`);
 
+    const useLocal = process.env.EXPO_PUBLIC_USE_LOCALHOST === 'true';
+    const host = useLocal ? (process.env.EXPO_PUBLIC_LOCALHOST_IP || 'localhost') : (process.env.EXPO_PUBLIC_SERVER_IP || '127.0.0.1');
+    const port = process.env.EXPO_PUBLIC_API_PORT || '8080';
+    const wsProtocol = process.env.EXPO_PUBLIC_WS_PROTOCOL || (useLocal ? 'ws' : 'ws');
+    const WS_URL = process.env.EXPO_PUBLIC_WS_URL || `${wsProtocol}://${host}/ws`;
+
+    console.debug('[SocketContext] WS_URL:', WS_URL);
+
     const client = new Client({
-      brokerURL: 'ws://152.69.225.125/ws', // IP 확인 필수
+      brokerURL: WS_URL,
+      connectHeaders: {
+        roomId: String(roomId),
+        playerId: String(playerId),
+    },
       forceBinaryWSFrames: true,
       appendMissingNULLonIncoming: true,
 

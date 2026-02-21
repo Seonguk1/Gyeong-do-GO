@@ -11,9 +11,6 @@
     "ios": {
       "bundleIdentifier": "com.kimmiki.gyeongdo",
       "supportsTablet": true,
-      "config": {
-        "googleMapsApiKey": "AIzaSyDsyWLpiyTgL5ha4svzGvn24oFDBU1ZiAo"
-      },
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
@@ -28,11 +25,6 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      },
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyDsyWLpiyTgL5ha4svzGvn24oFDBU1ZiAo"
-        }
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
