@@ -2,6 +2,22 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Environment Setup
+
+⚠️ **먼저 환경 변수를 설정해주세요!**
+
+환경 설정 가이드는 [ENV_SETUP.md](./ENV_SETUP.md)를 참조하세요.
+
+```bash
+# .env 파일 생성
+cp .env.example .env
+
+# .env 파일에서 다음 값들을 설정:
+# - EXPO_PUBLIC_API_BASE_URL: 백엔드 API 주소
+# - EXPO_PUBLIC_WS_URL: WebSocket 서버 주소
+# - EXPO_PUBLIC_GOOGLE_MAPS_API_KEY: Google Maps API 키
+```
+
 ## Get started
 
 1. Install dependencies
@@ -10,7 +26,14 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Setup environment variables
+
+   ```bash
+   cp .env.example .env
+   # .env 파일 수정 (위의 Environment Setup 참조)
+   ```
+
+3. Start the app
 
    ```bash
    npx expo start
