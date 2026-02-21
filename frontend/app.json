@@ -9,9 +9,17 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.kimmiki.gyeongdo",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "NSLocalNetworkUsageDescription": "서버와 통신하기 위해 로컬 네트워크 권한이 필요합니다."
+      }
     },
     "android": {
+      "package": "com.kimmiki.gyeongdo",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -38,7 +46,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      
     ],
     "experiments": {
       "typedRoutes": true,

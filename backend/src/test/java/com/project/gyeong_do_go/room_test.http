@@ -1,25 +1,65 @@
-### [success] create_room
-POST http://localhost:8080/api/rooms
+### 변수 설정
+@hostname = localhost
+@port = 8080
+@baseUrl = http://{{hostname}}:{{port}}/api
+
+### 1. 방 생성 (방장 A)
+# @name createRoom
+POST {{baseUrl}}/rooms
 Content-Type: application/json
 
 {
-  "nickname": "su"
+  "nickname": "방장A",
+  "latitude": 37.5665,
+  "longitude": 126.9780,
+  "mapRadius": 300,
+  "prisonRadius": 10,
+  "timeLimit": 600,
+  "runawayLimit": 120
 }
 
-### [success] join_room
-POST http://localhost:8080/api/rooms/join
+### 방 생성 응답에서 roomId와 hostId를 변수로 저장 (IntelliJ 기능)
+@roomId = 1
+@roomCode = 88BG68
+@playerId = 1
+@hostId = 1
+
+### 2. 방 참가 (참여자 B)
+# @name joinRoom
+POST {{baseUrl}}/rooms/join
 Content-Type: application/json
 
 {
-  "code" : "123456",
-  "nickname": "player123"
+  "roomCode": "{{roomCode}}",
+  "nickname": "참여자B"
 }
 
-### [error] join_room
-POST http://localhost:8080/api/rooms/join
+### 방 조회
+GET {{baseUrl}}/rooms/{{roomId}}?playerId={{playerId}}
+Content-Type: application/json
+
+### 팀 변경
+PATCH {{baseUrl}}/rooms/{{roomId}}/players/role
 Content-Type: application/json
 
 {
-  "code" : "",
-  "nickname": ""
+  "playerId": {{playerId}},
+  "role": "POLICE"
+}
+
+### 준비 변경
+PATCH {{baseUrl}}/rooms/{{roomId}}/players/ready
+Content-Type: application/json
+
+{
+  "playerId": {{playerId}},
+  "isReady": true
+}
+
+### 게임 시작
+PATCH {{baseUrl}}/rooms/{{roomId}}/start
+Content-Type: application/json
+
+{
+  "playerId": {{hostId}}
 }

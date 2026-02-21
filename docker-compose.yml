@@ -1,0 +1,30 @@
+services:
+  backend:
+    # 만약 이미지를 직접 빌드해야 한다면 build 경로 지정
+    build: . 
+    image: gyeong-do-go-backend
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: gyeong-do-go-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    container_name: gyeong-do-go-redis
+    ports:
+      - "6379:6379"

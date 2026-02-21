@@ -2,28 +2,47 @@ package com.project.gyeong_do_go.global.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.project.gyeong_do_go.global.error.ErrorCode;
-import com.project.gyeong_do_go.global.error.ErrorReason;
+import lombok.Getter;
 
-import java.util.List;
+@Getter
+public class ApiResponse<T> {
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public record ApiResponse<T>(
-        boolean success,
-        T data,
-        ApiError error
-) {
-    public record ApiError (ErrorCode code, List<ErrorDetail> details) {}
-    public record ErrorDetail(String field, ErrorReason reason) {}
+    private final boolean success;
+    private final T data;
+    private final ErrorResponse error;
 
-    public static <T> ApiResponse<T> ok(T data) {
+    // 생성자 (Private)
+    private ApiResponse(boolean success, T data, ErrorResponse error) {
+        this.success = success;
+        this.data = data;
+        this.error = error;
+    }
+
+    // 성공 응답 (Static Factory)
+    public static <T> ApiResponse<T> success() {
+        return new ApiResponse<>(true, null, null);
+    }
+    public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>(true, data, null);
     }
 
-    public static <T> ApiResponse<T> fail(ErrorCode code) {
-        return new ApiResponse<>(false, null, new ApiError(code, null));
+    // 에러 응답 (Static Factory)
+    public static ApiResponse<Void> fail(ErrorCode errorCode, Object details) {
+        return new ApiResponse<>(false, null, new ErrorResponse(errorCode.getCode(), details));
     }
 
-    public static <T> ApiResponse<T> fail(ErrorCode code, List<ErrorDetail> details) {
-        return new ApiResponse<>(false, null, new ApiError(code, details));
+    // --- Inner Class for Error Structure ---
+    @Getter
+    public static class ErrorResponse {
+        private final String code;
+
+        // details는 String일 수도 있고, List<ValidationError>일 수도 있어서 Object로 선언
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private final Object details;
+
+        public ErrorResponse(String code, Object details) {
+            this.code = code;
+            this.details = details;
+        }
     }
 }
