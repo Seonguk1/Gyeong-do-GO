@@ -1,5 +1,4 @@
 import { Client } from '@stomp/stompjs';
-import { getSecondsDiff } from '@utils/timeUtils';
 import { useRouter } from 'expo-router';
 import 'fast-text-encoding';
 import { getDistance } from 'geolib';
@@ -14,11 +13,13 @@ export const SocketProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
   const [roomData, setRoomData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [startVisible, setStartVisible] = useState(false);
   const [prisonerNumber, setPrisonerNumber] = useState(null);
   const roomDataRef=useRef(null);
   const { getCurrentCoords } = useLocation();
   const outOfBoundsTimerRef = useRef(null);
   const [isOutOfBounds, setIsOutOfBounds] = useState(false);
+  const [rescue, setRescue] = useState(false);
   const [myLocation, setMyLocation] = useState(null);
 
   const catchTheif = (number) => {//도둑 잡음 메세지
@@ -30,16 +31,15 @@ export const SocketProvider = ({ children }) => {
     });
   }
 
-  useEffect(() => {
+  useEffect(() => {//사용자 위치 이동 감지(구출 및 이탈)
     if (!connected || !roomDataRef.current || !myLocation) return;
     
-    const rawData = typeof roomDataRef.current === 'string' 
-      ? JSON.parse(roomDataRef.current) 
-      : roomDataRef.current;
+    const rawData = roomDataRef.current;
 
-    const centerLat = rawData.data?.centerLat;
-    const centerLon = rawData.data?.centerLon;
-    const mapRadius = rawData.data?.mapRadius || 300;
+    const centerLat = rawData.centerLat;
+    const centerLon = rawData.centerLon;
+    const mapRadius = rawData.mapRadius || 300;
+    const prisonRadius = rawData.prisonRadius || 20;
 
     if (!centerLat || !centerLon) return;
 
@@ -57,11 +57,19 @@ export const SocketProvider = ({ children }) => {
         }, 10000);
       }
     } 
+    else if (distance < prisonRadius) {
+      if (!rescue) {
+        setRescue(true);
+      }
+    }
     else {
       if (outOfBoundsTimerRef.current) {
         clearTimeout(outOfBoundsTimerRef.current);
         outOfBoundsTimerRef.current = null;
         setIsOutOfBounds(false);
+      }
+      if (rescue) {
+        setRescue(false);
       }
     }
     return () => {
@@ -77,6 +85,17 @@ export const SocketProvider = ({ children }) => {
     disconnect();
     router.replace("/entry/main");
     alert("구역을 너무 멀리 벗어나 게임에서 제외되었습니다.");
+  };
+
+  const rescueSuccess = () => {
+    clientRef.current?.publish({
+          destination: '/app/game/rescue',
+          body: JSON.stringify(),
+        });
+    alert("구출 완료!");
+    if (rescue) {
+      setRescue(false);
+    }
   };
 
 
@@ -138,11 +157,13 @@ export const SocketProvider = ({ children }) => {
             const status = received.data?.roomStatus || received.roomStatus;
             console.log("방 상태 변경:", status);
             if (status == "STARTING") {
-              const serverTime = received.data?.startTime;
-              const diff = getSecondsDiff(serverTime);
-              setTimeLeft(diff > 0 ? diff : 5);
+              //const serverTime = received.data?.startTime;
+              //const diff = getSecondsDiff(serverTime);
+              setTimeLeft(5);
+              setStartVisible(true);
             }
             else if (status == "ROLE_CHECK") {
+              setStartVisible(false);
               setTimeLeft(10);
               router.push({
                 pathname: "/game/role_check",
@@ -206,7 +227,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds}}>
+    <SocketContext.Provider value={{ connect, disconnect, connected, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, startVisible}}>
       {children}
     </SocketContext.Provider>
   );

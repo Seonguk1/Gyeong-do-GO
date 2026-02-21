@@ -1,7 +1,7 @@
-import { useLocalSearchParams } from "expo-router";
-import { View, Text, StyleSheet, Image } from "react-native";
 import ScreenContainer from "@components/global/ScreenContainer";
 import useRoomSocket from "@hooks/useRoomSocket";
+import { useLocalSearchParams } from "expo-router";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { typography } from "../../src/constants/typography";
 
 export default function RoleCheckScreen() {
@@ -38,8 +38,8 @@ export default function RoleCheckScreen() {
                 <View style={{ alignItems: "center" }}>
                     <Text style={typography.title}>도주 시간까지</Text>
                     {/* 여기서 30초부터 줄어드는 숫자가 자동으로 보임 */}
-                    <Text style={[typography.title, { color: timeLeft < 10 ? "red" : "#fff" }]}>
-                        00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+                    <Text style={[typography.title, { color: "red"}]}>
+                        00:{timeLeft < 6 ? `0${timeLeft}` : timeLeft}
                     </Text>
                 </View>
 
