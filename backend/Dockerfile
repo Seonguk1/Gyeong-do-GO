@@ -1,12 +1,22 @@
-# 1. 베이스 이미지 설정 (자바 버전 17 기준)
-FROM openjdk:25-jdk-slim
-
-# 2. 컨테이너 내부 작업 디렉토리 설정
+# 1. 빌드 단계 (Build Stage)
+# 자바 25 환경에서 소스 코드를 빌드함
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
 
-# 3. 빌드된 JAR 파일을 컨테이너 안으로 복사
-# (미리 ./gradlew build를 통해 JAR가 생성되어 있어야 함)
-COPY build/libs/*.jar app.jar
+# 프로젝트 파일 복사 (gradle 래퍼 포함)
+COPY . .
 
-# 4. 앱 실행 명령어
+# 실행 권한 부여 및 JAR 파일 빌드 (테스트는 제외하고 빌드 속도 향상)
+RUN chmod +x gradlew
+RUN ./gradlew clean build -x test
+
+# 2. 실행 단계 (Run Stage)
+# 실제 컨테이너 실행을 위한 가벼운 이미지 사용
+FROM eclipse-temurin:25-jre-hotspot-minimal
+WORKDIR /app
+
+# 빌드 단계에서 생성된 JAR 파일만 가져옴
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# 실행
 ENTRYPOINT ["java", "-jar", "app.jar"]
