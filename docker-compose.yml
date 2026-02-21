@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  db:
+    image: postgis/postgis:15-3.3 # PostGIS 이미지
+    container_name: gyeong-do-go-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest # Redis 이미지
+    container_name: gyeong-do-go-redis
+    ports:
+      - "6379:6379"
