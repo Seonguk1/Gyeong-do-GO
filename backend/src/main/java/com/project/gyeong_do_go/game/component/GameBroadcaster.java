@@ -4,10 +4,13 @@ import com.project.gyeong_do_go.game.domain.GameMessageType;
 import com.project.gyeong_do_go.game.dto.response.GameResponse;
 import com.project.gyeong_do_go.game.dto.response.GameStartResponse;
 import com.project.gyeong_do_go.game.dto.response.LocationResponse;
+import com.project.gyeong_do_go.game.dto.response.LocationSnapshotResponse;
 import com.project.gyeong_do_go.game.dto.response.UpdateRoomResponse;
 import com.project.gyeong_do_go.game.repository.GameRepository;
 import com.project.gyeong_do_go.player.domain.Role;
 import com.project.gyeong_do_go.player.entity.Player;
+import com.project.gyeong_do_go.player.entity.PlayerRedis;
+import com.project.gyeong_do_go.player.repository.PlayerRedisRepository;
 import com.project.gyeong_do_go.room.domain.GameStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class GameBroadcaster {
     private final SimpMessagingTemplate template;
     private final GameRepository gameRepository;
     private final GameReader gameReader;
+    private final PlayerRedisRepository playerRedisRepository;
 
     public void sendToRoom(Long roomId, GameMessageType type, Object data) {
         GameResponse<Object> response = GameResponse.builder()
@@ -83,5 +88,30 @@ public class GameBroadcaster {
                 .build();
 
             sendToRoom(roomId, GameMessageType.UPDATE_LOCATION, locationData);
+    }
+
+    @Transactional(readOnly = true)
+    public void broadcastLocationSnapshot(Long roomId) {
+        List<Player> players = gameRepository.getPlayers(roomId);
+        List<LocationResponse> locations = players.stream()
+                .map(player -> {
+                    PlayerRedis playerRedis = playerRedisRepository.findById(player.getId())
+                            .orElse(null);
+                    double lat = playerRedis != null ? playerRedis.getLatitude() : player.getLatitude();
+                    double lng = playerRedis != null ? playerRedis.getLongitude() : player.getLongitude();
+                    return LocationResponse.builder()
+                            .playerId(player.getId())
+                            .latitude(lat)
+                            .longitude(lng)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        LocationSnapshotResponse snapshot = LocationSnapshotResponse.builder()
+                .locations(locations)
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        sendToRoom(roomId, GameMessageType.UPDATE_LOCATIONS, snapshot);
     }
 }

@@ -7,8 +7,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Circle, PROVIDER_GOOGLE } from 'react-native-maps';
-import CustomBtn from '../../src/components/global/CustomBtn';
-import CustomModal from '../../src/components/global/CustomModal';
+import CustomBtn from '@components/global/CustomBtn';
+import CustomModal from '@components/global/CustomModal';
 
 
 export default function Game_Main() {
@@ -55,8 +55,10 @@ export default function Game_Main() {
     useEffect (()=> {//상단 타이머
         if (roomData && timeLeft === 0){
         const parsedData = roomData;
+        console.log(`roomData : ${JSON.stringify(parsedData)}`);
         setSecondsLeft(parsedData?.timeLimit)}
     },[roomData,timeLeft])
+
     useEffect(() => {
         if (secondsLeft <= 0) return;
 
@@ -66,15 +68,12 @@ export default function Game_Main() {
 
         return () => clearInterval(timerId);
     }, [secondsLeft]);
+
     const formatTime = (totalSeconds) => {
         const min = Math.floor(totalSeconds / 60);
         const sec = totalSeconds % 60;
         return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
     };
-
-    useEffect(()=>{
-
-    },[])
     
 
     if (!map.mapRadius) {

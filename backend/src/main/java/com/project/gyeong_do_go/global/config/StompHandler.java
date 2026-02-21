@@ -38,15 +38,26 @@ public class StompHandler implements ChannelInterceptor {
             String playerIdStr = accessor.getFirstNativeHeader("playerId");
 
             if (roomIdStr != null && playerIdStr != null) {
-                Long roomId = Long.parseLong(roomIdStr);
-                Long playerId = Long.parseLong(playerIdStr);
+                try {
+                    Long roomId = Long.parseLong(roomIdStr);
+                    Long playerId = Long.parseLong(playerIdStr);
 
-                gameValidator.validateAndGet(roomId, playerId);
+                    gameValidator.validateAndGet(roomId, playerId);
 
-                // C. 검증 통과 후, 세션(SessionAttributes)에 저장
-                // 이후 요청부터는 DB 조회 없이 이 값을 꺼내 씀
-                accessor.getSessionAttributes().put("roomId", roomId);
-                accessor.getSessionAttributes().put("playerId", playerId);
+                    // C. 검증 통과 후, 세션(SessionAttributes)에 저장
+                    // 이후 요청부터는 DB 조회 없이 이 값을 꺼내 씀
+                    accessor.getSessionAttributes().put("roomId", roomId);
+                    accessor.getSessionAttributes().put("playerId", playerId);
+                    log.info("✅ WebSocket 인증 성공: roomId={}, playerId={}", roomId, playerId);
+                } catch (NumberFormatException e) {
+                    log.error("❌ WebSocket 인증 실패 - 데이터 파싱 오류: roomId={}, playerId={}", roomIdStr, playerIdStr, e);
+                    throw new IllegalArgumentException("roomId 또는 playerId이 숫자가 아닙니다");
+                } catch (Exception e) {
+                    log.error("❌ WebSocket 인증 실패: {}", e.getMessage(), e);
+                    throw new RuntimeException("WebSocket 인증 실패", e);
+                }
+            } else {
+                log.warn("⚠️ WebSocket CONNECT 시 roomId 또는 playerId 헤더 누락: roomId={}, playerId={}", roomIdStr, playerIdStr);
             }
         }
 
