@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   backend:
     # 만약 이미지를 직접 빌드해야 한다면 build 경로 지정
