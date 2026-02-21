@@ -2,7 +2,11 @@ import { useSocket } from "@context/SocketContext";
 import { useEffect, useMemo } from "react";
 
 export default function useRoomSocket(roomId, playerId) {
+<<<<<<< HEAD
   const { connect, connected, disconnect, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, startVisible} = useSocket();
+=======
+  const { connect, connected, disconnect, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess} = useSocket();
+>>>>>>> ede2ea40 (구출, 검거, 이탈 구현)
 
   // 1. 진입 시 연결 요청 (이미 연결돼 있으면 무시됨)
   useEffect(() => {
@@ -25,5 +29,9 @@ export default function useRoomSocket(roomId, playerId) {
     };
   }, [roomData, playerId]);
 
+<<<<<<< HEAD
   return { connected, disconnect, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, startVisible, ...result };
+=======
+  return { connected, disconnect, roomData, timeLeft, prisonerNumber, catchTheif, isOutOfBounds, rescue, rescueSuccess, ...result };
+>>>>>>> ede2ea40 (구출, 검거, 이탈 구현)
 }
