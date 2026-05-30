@@ -38,7 +38,6 @@ public class StompHandler implements ChannelInterceptor {
             String playerIdStr = accessor.getFirstNativeHeader("playerId");
 
             if (roomIdStr != null && playerIdStr != null) {
-<<<<<<< HEAD
                 try {
                     Long roomId = Long.parseLong(roomIdStr);
                     Long playerId = Long.parseLong(playerIdStr);
@@ -59,17 +58,6 @@ public class StompHandler implements ChannelInterceptor {
                 }
             } else {
                 log.warn("⚠️ WebSocket CONNECT 시 roomId 또는 playerId 헤더 누락: roomId={}, playerId={}", roomIdStr, playerIdStr);
-=======
-                Long roomId = Long.parseLong(roomIdStr);
-                Long playerId = Long.parseLong(playerIdStr);
-
-                gameValidator.validateAndGet(roomId, playerId);
-
-                // C. 검증 통과 후, 세션(SessionAttributes)에 저장
-                // 이후 요청부터는 DB 조회 없이 이 값을 꺼내 씀
-                accessor.getSessionAttributes().put("roomId", roomId);
-                accessor.getSessionAttributes().put("playerId", playerId);
->>>>>>> a4100065 (werwe)
             }
         }
 
